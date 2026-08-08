@@ -1,0 +1,350 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+#root {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #09090b;
+  color: #fafafa;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cool display heading font */
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+/* Alternative display font */
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Subtle glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Subtle gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Accent gradient - Sunflower theme */
+.accent-gradient {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%);
+}
+
+/* Sunflower gradient for special elements */
+.sunflower-gradient {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+}
+
+/* Snehaa's special gradient - more prominent */
+.snehaa-gradient {
+  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 30%, #f59e0b 70%, #d97706 100%);
+  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+}
+
+/* Subtle glow effects */
+.glow-accent {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.25);
+}
+
+.glow-success {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+.glow-sunflower {
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.3), 0 0 80px rgba(245, 158, 11, 0.15);
+}
+
+/* Clean border */
+.border-subtle {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Surface colors */
+.surface-1 {
+  background: #18181b;
+}
+
+.surface-2 {
+  background: #27272a;
+}
+
+.surface-elevated {
+  background: linear-gradient(145deg, #1f1f23 0%, #18181b 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Transition utilities */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Swipe container */
+.swipe-container {
+  touch-action: pan-x;
+}
+
+/* Subtle match indicator */
+.match-indicator {
+  position: relative;
+}
+
+.match-indicator::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.1));
+  z-index: -1;
+}
+
+/* Status dot pulse */
+.status-pulse {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Smooth fade in */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* No match effect */
+.no-match-shake {
+  animation: noMatchShake 0.5s ease-in-out;
+}
+
+@keyframes noMatchShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* Pulse ring effect */
+.pulse-ring {
+  animation: pulseRing 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* Slide animations */
+.slide-enter-left {
+  animation: slideEnterLeft 0.4s ease-out forwards;
+}
+
+.slide-enter-right {
+  animation: slideEnterRight 0.4s ease-out forwards;
+}
+
+@keyframes slideEnterLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideEnterRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Happy bounce for match */
+.happy-bounce {
+  animation: happyBounce 0.6s ease-in-out;
+}
+
+@keyframes happyBounce {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.05); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.02); }
+}
+
+/* Sad wobble for no match */
+.sad-wobble {
+  animation: sadWobble 0.8s ease-in-out;
+}
+
+@keyframes sadWobble {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+/* Match celebration glow - Sunflower theme */
+.match-glow {
+  animation: matchGlow 2s ease-in-out infinite;
+}
+
+@keyframes matchGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(245, 158, 11, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 35px rgba(251, 191, 36, 0.6), 0 0 70px rgba(245, 158, 11, 0.3);
+  }
+}
+
+/* Shimmer effect */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% { left: 100%; }
+}
+
+/* Floating animation */
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Pulse scale */
+.pulse-scale {
+  animation: pulseScale 2s ease-in-out infinite;
+}
+
+@keyframes pulseScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+/* Gradient border animation - Sunflower theme */
+.gradient-border-animated {
+  position: relative;
+  background: linear-gradient(#18181b, #18181b) padding-box,
+              linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24) border-box;
+  border: 2px solid transparent;
+  animation: gradientShift 3s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% { background: linear-gradient(#18181b, #18181b) padding-box,
+                   linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
+  50% { background: linear-gradient(#18181b, #18181b) padding-box,
+                   linear-gradient(225deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
+  100% { background: linear-gradient(#18181b, #18181b) padding-box,
+                    linear-gradient(315deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
+}
+
+/* Sparkle effect for emojis */
+.sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+/* Install prompt */
+.install-prompt {
+  animation: slideUp 0.5s ease-out;
+}
