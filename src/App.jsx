@@ -13,7 +13,7 @@ function App() {
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
   const [rosterData, setRosterData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [userNames] = useState({ userA: 'Snehaa 🌻', userB: 'Partner' })
+  const [userNames] = useState({ userA: 'Snehaa 🌻', userB: 'P🌍' })
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
 
