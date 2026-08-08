@@ -348,3 +348,67 @@ body {
 .install-prompt {
   animation: slideUp 0.5s ease-out;
 }
+
+/* ============================================
+   INTRO SPLASH SCREEN ANIMATIONS
+   ============================================ */
+
+/* Fade in animation for intro */
+.animate-fade-in {
+  animation: introFadeIn 0.8s ease-out;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Floating sunflowers */
+.animate-float {
+  animation: introFloat 4s ease-in-out infinite;
+}
+
+@keyframes introFloat {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+  }
+  25% { 
+    transform: translateY(-15px) rotate(5deg); 
+  }
+  50% { 
+    transform: translateY(-8px) rotate(-3deg); 
+  }
+  75% { 
+    transform: translateY(-20px) rotate(3deg); 
+  }
+}
+
+/* Slow bounce for main sunflower */
+.animate-bounce-slow {
+  animation: bounceSlow 2s ease-in-out infinite;
+}
+
+@keyframes bounceSlow {
+  0%, 100% { 
+    transform: translateY(0) scale(1); 
+  }
+  50% { 
+    transform: translateY(-12px) scale(1.05); 
+  }
+}
+
+/* Slide up for text elements */
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out both;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
