@@ -387,3 +387,61 @@ body {
     transform: translateY(0); 
   }
 }
+
+/* ================================
+   SHIFT THEME ANIMATIONS
+   ================================ */
+
+/* Slow floating for work shifts */
+.animate-float-slow {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+    opacity: 0.15;
+  }
+  50% { 
+    transform: translateY(-15px) rotate(5deg); 
+    opacity: 0.25;
+  }
+}
+
+/* Celebration floating for off days */
+.animate-float-celebration {
+  animation: floatCelebration 2.5s ease-in-out infinite;
+}
+
+@keyframes floatCelebration {
+  0%, 100% { 
+    transform: translateY(0) scale(1) rotate(0deg); 
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) scale(1.1) rotate(-5deg);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: translateY(-10px) scale(1.05) rotate(5deg); 
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateY(-25px) scale(1.15) rotate(-3deg);
+    opacity: 0.5;
+  }
+}
+
+/* Celebration glow effect */
+.celebration-glow {
+  animation: celebrationGlow 2s ease-in-out infinite;
+}
+
+@keyframes celebrationGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(245, 158, 11, 0.15);
+  }
+  50% { 
+    box-shadow: 0 0 35px rgba(251, 191, 36, 0.5), 0 0 60px rgba(245, 158, 11, 0.25);
+  }
+}

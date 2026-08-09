@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns'
-import { getShiftInfo, doShiftsMatch, SHIFT_CODES } from '../utils/shiftCodes'
+import { getShiftInfo, SHIFT_CODES, WORK_SHIFTS } from '../utils/shiftCodes'
 import { isIndianToday } from '../utils/indianTime'
 
 function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIndex }) {
@@ -12,26 +12,38 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
   // Calculate first day offset (0 = Sunday)
   const firstDayOffset = getDay(startOfMonth(selectedMonth))
 
-  // Calculate stats
+  // Calculate Snehaa's shift stats
   const stats = useMemo(() => {
-    let matching = 0
-    let total = 0
+    const shiftCounts = {}
+    let workDays = 0
+    let offDays = 0
+    let totalDays = 0
 
     daysInMonth.forEach(day => {
       const key = format(day, 'yyyy-MM-dd')
       const dayData = roasterData[key]
-      if (dayData && dayData.userA && dayData.userB) {
-        total++
-        if (doShiftsMatch(dayData.userA, dayData.userB)) {
-          matching++
+      if (dayData && dayData.userA) {
+        totalDays++
+        const shift = dayData.userA
+        shiftCounts[shift] = (shiftCounts[shift] || 0) + 1
+        
+        if (WORK_SHIFTS.includes(shift)) {
+          workDays++
+        } else {
+          offDays++
         }
       }
     })
 
-    return { matching, total, percentage: total > 0 ? Math.round((matching / total) * 100) : 0 }
+    return { shiftCounts, workDays, offDays, totalDays }
   }, [daysInMonth, roasterData])
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  // Get top shifts for summary
+  const topShifts = Object.entries(stats.shiftCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 pb-8">
@@ -39,32 +51,46 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
         {/* Stats Summary */}
         <div className="mb-5 p-4 rounded-2xl surface-1 border border-amber-900/30">
           <h3 className="text-xs font-bold text-amber-400/70 mb-4 uppercase tracking-widest font-display flex items-center gap-2">
-            <span>🌻</span> Monthly Summary
+            <span>🌻</span> Snehaa's {format(selectedMonth, 'MMMM')}
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center p-4 rounded-xl surface-2 border border-amber-500/20">
-              <div className="text-3xl font-bold text-amber-400 font-display">{stats.matching}</div>
-              <div className="text-[10px] text-zinc-500 font-semibold mt-1 tracking-wide">TOGETHER 💛</div>
+              <div className="text-3xl font-bold text-amber-400 font-display">{stats.workDays}</div>
+              <div className="text-[10px] text-zinc-500 font-semibold mt-1 tracking-wide">WORK DAYS</div>
+            </div>
+            <div className="text-center p-4 rounded-xl surface-2 border border-emerald-500/20">
+              <div className="text-3xl font-bold text-emerald-400 font-display">{stats.offDays}</div>
+              <div className="text-[10px] text-zinc-500 font-semibold mt-1 tracking-wide">OFF DAYS</div>
             </div>
             <div className="text-center p-4 rounded-xl surface-2">
-              <div className="text-3xl font-bold text-white font-display">{stats.total}</div>
+              <div className="text-3xl font-bold text-white font-display">{stats.totalDays}</div>
               <div className="text-[10px] text-zinc-500 font-semibold mt-1 tracking-wide">TOTAL</div>
             </div>
-            <div className="text-center p-4 rounded-xl surface-2 border border-amber-500/20">
-              <div className="text-3xl font-bold text-amber-300 font-display">{stats.percentage}%</div>
-              <div className="text-[10px] text-zinc-500 font-semibold mt-1 tracking-wide">BLOOM RATE</div>
+          </div>
+
+          {/* Shift Breakdown */}
+          {topShifts.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center">
+              {topShifts.map(([shift, count]) => {
+                const info = getShiftInfo(shift)
+                return (
+                  <div 
+                    key={shift} 
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg ${info.bgClass} border border-white/5`}
+                  >
+                    <span className="text-lg">{info.emoji}</span>
+                    <span className={`text-sm font-bold ${info.textColor}`}>{count}</span>
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          )}
           
-          {/* Progress Bar */}
-          <div className="mt-4 h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full sunflower-gradient transition-all duration-500 rounded-full"
-              style={{ width: `${stats.percentage}%` }}
-            />
-          </div>
-          <p className="text-xs text-center text-amber-400/50 mt-2">
-            {stats.matching > 0 ? `${stats.matching} beautiful days together in ${format(selectedMonth, 'MMMM')}! 🌼` : 'Add shifts to see your bloom rate!'}
+          <p className="text-xs text-center text-amber-400/50 mt-4">
+            {stats.offDays > 0 
+              ? `${stats.offDays} days to recharge those sunflower batteries! 🌻` 
+              : 'Add shifts to see the summary!'}
           </p>
         </div>
 
@@ -90,10 +116,12 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
             {daysInMonth.map((day, index) => {
               const key = format(day, 'yyyy-MM-dd')
               const dayData = roasterData[key]
-              const isMatching = dayData && doShiftsMatch(dayData.userA, dayData.userB)
-              const hasData = dayData && dayData.userA && dayData.userB
+              const shift = dayData?.userA
+              const hasData = !!shift
               const isCurrentDay = isIndianToday(day)
               const isSelected = index === currentDayIndex
+              const shiftInfo = hasData ? getShiftInfo(shift) : null
+              const isOffDay = hasData && ['WO', 'L', 'EL', 'CO', 'H', 'SDO'].includes(shift)
 
               return (
                 <button
@@ -104,8 +132,8 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
                       ? 'ring-1 ring-amber-400 ring-offset-1 ring-offset-[#09090b]'
                       : ''
                   } ${
-                    isMatching
-                      ? 'surface-2 border border-amber-400/40 text-amber-300 hover:bg-amber-500/10'
+                    isOffDay
+                      ? 'surface-2 border border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/10'
                       : hasData
                         ? 'surface-2 hover:bg-zinc-700/50 text-zinc-300'
                         : 'text-zinc-600 hover:bg-zinc-800/50'
@@ -116,21 +144,17 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
                   </span>
                   
                   {hasData && (
-                    <div className="flex gap-0.5 mt-0.5">
+                    <div className="mt-0.5">
                       <div 
-                        className={`w-1.5 h-1.5 rounded-full ${getShiftInfo(dayData.userA).color}`}
-                        title={`Snehaa: ${dayData.userA}`}
-                      />
-                      <div 
-                        className={`w-1.5 h-1.5 rounded-full ${getShiftInfo(dayData.userB).color}`}
-                        title={`Partner: ${dayData.userB}`}
+                        className={`w-2 h-2 rounded-full ${shiftInfo.color}`}
+                        title={`${shiftInfo.label}`}
                       />
                     </div>
                   )}
                   
-                  {isMatching && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-500 flex items-center justify-center">
-                      <span className="text-[8px]">🌻</span>
+                  {isOffDay && (
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <span className="text-[8px]">🎉</span>
                     </div>
                   )}
                 </button>

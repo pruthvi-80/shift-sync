@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Sunflower Sync 🌻',
-        short_name: 'Sunflower',
-        description: 'Compare daily work shifts between Snehaa and Partner',
+        name: "Snehaa's Roster 🌻",
+        short_name: 'Roster',
+        description: "Monthly shift roster for Snehaa - Made with love",
         theme_color: '#fbbf24',
         background_color: '#18181b',
         display: 'standalone',

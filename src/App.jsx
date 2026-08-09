@@ -14,7 +14,7 @@ function App() {
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
   const [roasterData, setRoasterData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [userNames] = useState({ userA: 'Snehaa 🌻', userB: 'P🌍' })
+  const [userNames] = useState({ userA: 'Snehaa 🌻' })
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [todayShift, setTodayShift] = useState(null)
@@ -153,7 +153,7 @@ function App() {
             
             {/* Title */}
             <h1 className="text-4xl font-bold font-display text-amber-100 mb-3 animate-slide-up">
-              Sunflower Sync 🌻
+              Snehaa's Roster 🌻
             </h1>
             
             {/* Time-based Greeting */}
@@ -164,12 +164,12 @@ function App() {
             
             {/* Tagline */}
             <p className="text-lg text-amber-400/80 font-medium mb-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              Bloom for Sunflower 🌻
+              For Sunflower 🌻
             </p>
             
             {/* Subtitle */}
             <p className="text-amber-300/60 text-sm animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              Made with 💛 for (^/😼/^)
+              Made with 💛 for her 🐣
             </p>
             
             {/* Emoji row */}
@@ -192,6 +192,7 @@ function App() {
         selectedMonth={selectedMonth}
         onMonthChange={handleMonthChange}
         loading={loading}
+        todayShift={todayShift}
       />
       
       <main className="flex-1 overflow-y-auto relative">
@@ -216,9 +217,9 @@ function App() {
               userNames={userNames}
             />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center fade-in">
+            <div className="min-h-full flex flex-col items-center p-8 pt-12 text-center fade-in">
               {/* Sunflower glow */}
-              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
               
               {/* Logo */}
               <div className="relative z-10 mb-6">
@@ -228,13 +229,13 @@ function App() {
               </div>
               
               <h2 className="relative z-10 text-3xl font-bold mb-2 font-display text-amber-100">
-                Sunflower Sync
+                Snehaa's Roster
               </h2>
               <p className="relative z-10 text-amber-400/60 mb-2 text-sm">
-                For my beautiful sunflower 💛
+                For Sunflower 💛
               </p>
               <p className="relative z-10 text-zinc-500 mb-8 max-w-xs text-sm leading-relaxed">
-                No roaster data for this month yet
+                No roster data for this month yet
               </p>
               
               <p className="relative z-10 text-amber-400/40 text-xs max-w-xs">
@@ -245,15 +246,15 @@ function App() {
               <div className="relative z-10 flex flex-col gap-2 mt-10 text-sm text-zinc-500">
                 <span className="flex items-center gap-2">
                   <span className="text-amber-400">🌼</span>
-                  Find matching shifts together
+                  Track Snehaa's shifts easily
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-amber-400">💛</span>
-                  Celebrate days together
+                  Beautiful shift themes
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-amber-400">✨</span>
-                  Made with love for (^/😼/^)
+                  Made with love for her 🐣
                 </span>
               </div>
             </div>
