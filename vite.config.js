@@ -7,15 +7,16 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Sunflower Sync 🌻',
         short_name: 'Sunflower',
-        description: 'Compare daily work shifts between two users',
-        theme_color: '#6366f1',
-        background_color: '#0f172a',
+        description: 'Compare daily work shifts between Snehaa and Partner',
+        theme_color: '#fbbf24',
+        background_color: '#18181b',
         display: 'standalone',
         orientation: 'portrait',
+        start_url: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -31,9 +32,12 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
       }
     })
   ]
