@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 * {
   margin: 0;
@@ -238,16 +238,15 @@ body {
   }
 }
 
-/* Happy bounce for match */
+/* Happy bounce for match - subtle */
 .happy-bounce {
-  animation: happyBounce 0.6s ease-in-out;
+  animation: happyBounce 0.4s ease-out;
 }
 
 @keyframes happyBounce {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.05); }
-  50% { transform: scale(0.95); }
-  75% { transform: scale(1.02); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
 /* Sad wobble for no match */
@@ -261,18 +260,9 @@ body {
   75% { transform: rotate(2deg); }
 }
 
-/* Match celebration glow - Sunflower theme */
+/* Match celebration glow - Sunflower theme (subtle) */
 .match-glow {
-  animation: matchGlow 2s ease-in-out infinite;
-}
-
-@keyframes matchGlow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(245, 158, 11, 0.2);
-  }
-  50% { 
-    box-shadow: 0 0 35px rgba(251, 191, 36, 0.6), 0 0 70px rgba(245, 158, 11, 0.3);
-  }
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), 0 0 25px rgba(245, 158, 11, 0.15);
 }
 
 /* Shimmer effect */
@@ -306,32 +296,17 @@ body {
   50% { transform: translateY(-8px); }
 }
 
-/* Pulse scale */
+/* Pulse scale - disabled for cleaner look */
 .pulse-scale {
-  animation: pulseScale 2s ease-in-out infinite;
+  /* animation removed for subtlety */
 }
 
-@keyframes pulseScale {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-/* Gradient border animation - Sunflower theme */
+/* Gradient border - Sunflower theme (static) */
 .gradient-border-animated {
   position: relative;
   background: linear-gradient(#18181b, #18181b) padding-box,
               linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24) border-box;
   border: 2px solid transparent;
-  animation: gradientShift 3s linear infinite;
-}
-
-@keyframes gradientShift {
-  0% { background: linear-gradient(#18181b, #18181b) padding-box,
-                   linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
-  50% { background: linear-gradient(#18181b, #18181b) padding-box,
-                   linear-gradient(225deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
-  100% { background: linear-gradient(#18181b, #18181b) padding-box,
-                    linear-gradient(315deg, #fbbf24, #f59e0b, #fbbf24) border-box; }
 }
 
 /* Sparkle effect for emojis */

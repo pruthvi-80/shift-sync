@@ -1,5 +1,14 @@
 import confetti from 'canvas-confetti'
 
+// Safely call confetti with error handling
+function safeConfetti(options) {
+  try {
+    confetti(options)
+  } catch (e) {
+    console.warn('Confetti error:', e)
+  }
+}
+
 export function fireConfetti() {
   // Celebratory confetti burst - sunflower themed
   const count = 150
@@ -9,7 +18,7 @@ export function fireConfetti() {
   }
 
   function fire(particleRatio, opts) {
-    confetti({
+    safeConfetti({
       ...defaults,
       ...opts,
       particleCount: Math.floor(count * particleRatio)
@@ -37,7 +46,7 @@ export function fireMatchConfetti() {
 
     const particleCount = 40 * (timeLeft / duration)
 
-    confetti({
+    safeConfetti({
       particleCount,
       startVelocity: 30,
       spread: 360,
@@ -53,22 +62,26 @@ export function fireMatchConfetti() {
 
 export function fireHearts() {
   // Special sunflower effect for when both are on leave together 💛
-  const sunflower = confetti.shapeFromText({ text: '🌻', scalar: 2 })
-  const heart = confetti.shapeFromText({ text: '💛', scalar: 2 })
-  
-  confetti({
-    shapes: [sunflower, heart],
-    scalar: 2,
-    spread: 180,
-    particleCount: 30,
-    origin: { y: 0.6 },
-    startVelocity: 25,
-    gravity: 0.5,
-    zIndex: 9999
-  })
+  try {
+    const sunflower = confetti.shapeFromText({ text: '🌻', scalar: 2 })
+    const heart = confetti.shapeFromText({ text: '💛', scalar: 2 })
+    
+    safeConfetti({
+      shapes: [sunflower, heart],
+      scalar: 2,
+      spread: 180,
+      particleCount: 30,
+      origin: { y: 0.6 },
+      startVelocity: 25,
+      gravity: 0.5,
+      zIndex: 9999
+    })
+  } catch (e) {
+    console.warn('Hearts shape error:', e)
+  }
   
   // Also add some golden confetti
-  confetti({
+  safeConfetti({
     particleCount: 60,
     spread: 100,
     origin: { y: 0.65 },

@@ -26,42 +26,65 @@ function getCabReminder(shift, date) {
   }
 }
 
+// Track shown effects outside component (module-level) to persist across re-renders
+const shownEffectDates = new Set()
+let lastEffectTime = 0
+const EFFECT_COOLDOWN_MS = 8000 // 8 seconds between effects
+
 function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentIndex, totalDays, userNames = { userA: 'User A', userB: 'User B' } }) {
   const [slideDirection, setSlideDirection] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [hasShownEffect, setHasShownEffect] = useState(false)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const containerRef = useRef(null)
+  const effectTimerRef = useRef(null)
 
   const shiftA = dayData?.userA
   const shiftB = dayData?.userB
   const matchStatus = getMatchStatus(shiftA, shiftB)
 
-  // Trigger effects when day changes
+  // Trigger effects when day changes - with smart debouncing and session tracking
   useEffect(() => {
-    if (!hasShownEffect && dayData) {
-      setHasShownEffect(true)
-      
-      // Delay effect slightly for better UX
-      const timer = setTimeout(() => {
-        if (matchStatus.match) {
-          if (matchStatus.type === 'leave') {
-            fireHearts()
-          } else {
-            fireMatchConfetti()
-          }
-        }
-      }, 300)
-      
-      return () => clearTimeout(timer)
+    // Clear any pending effect from previous day
+    if (effectTimerRef.current) {
+      clearTimeout(effectTimerRef.current)
+      effectTimerRef.current = null
     }
-  }, [dayData, matchStatus.match, matchStatus.type, hasShownEffect])
 
-  // Reset effect flag when day changes
-  useEffect(() => {
-    setHasShownEffect(false)
-  }, [currentIndex])
+    if (!dayData || !date || !matchStatus.match) return
+
+    const dateKey = format(date, 'yyyy-MM-dd')
+    
+    // Skip if already shown for this date this session
+    if (shownEffectDates.has(dateKey)) return
+    
+    // Skip if within cooldown period
+    const now = Date.now()
+    if (now - lastEffectTime < EFFECT_COOLDOWN_MS) return
+
+    // Debounce: wait for user to settle on this day before firing
+    effectTimerRef.current = setTimeout(() => {
+      // Double-check cooldown (in case user was swiping during wait)
+      if (Date.now() - lastEffectTime < EFFECT_COOLDOWN_MS) return
+      
+      // Mark as shown and update last effect time
+      shownEffectDates.add(dateKey)
+      lastEffectTime = Date.now()
+      
+      if (matchStatus.type === 'leave') {
+        fireHearts()
+      } else {
+        fireMatchConfetti()
+      }
+    }, 600) // Wait 600ms to ensure user isn't just swiping through
+
+    return () => {
+      if (effectTimerRef.current) {
+        clearTimeout(effectTimerRef.current)
+        effectTimerRef.current = null
+      }
+    }
+  }, [date, dayData, matchStatus.match, matchStatus.type])
 
   const handleTouchStart = useCallback((e) => {
     touchStartX.current = e.touches[0].clientX
@@ -231,13 +254,49 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                 isUserA={false}
               />
               
-              {/* Cab Booking Reminder */}
-              {(WORK_SHIFTS.includes(shiftA) || WORK_SHIFTS.includes(shiftB)) && (
+              {/* Cab Booking Reminder - Always show for quick access */}
+              {(() => {
+                const dayOfWeek = getDay(date)
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                const hasWorkShift = WORK_SHIFTS.includes(shiftA) || WORK_SHIFTS.includes(shiftB)
+                
+                return (
                 <div className="mt-4 p-4 rounded-2xl surface-1 border border-amber-500/20 bg-amber-500/5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg">🚖</span>
-                    <h4 className="text-sm font-bold text-amber-400 font-display">Routematic Cab Reminder</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🚖</span>
+                      <h4 className="text-sm font-bold text-amber-400 font-display">Routematic Cab</h4>
+                    </div>
+                    <a 
+                      href="intent://scan/#Intent;scheme=zxing;package=com.routematic.employee;end"
+                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-transform"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        const isAndroid = /android/i.test(navigator.userAgent)
+                        if (isAndroid) {
+                          // Try market:// first - this opens app if installed
+                          window.location.href = 'market://launch?id=com.routematic.employee'
+                        } else {
+                          window.open('https://play.google.com/store/apps/details?id=com.routematic.employee', '_blank')
+                        }
+                      }}
+                    >
+                      <span>📱</span>
+                      <span>Open App</span>
+                    </a>
                   </div>
+                  
+                  {/* Weekend Note */}
+                  {isWeekend && (
+                    <div className="mb-3 p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                      <p className="text-[11px] text-orange-300 text-center">
+                        ⚠️ Cab booking not available on weekends
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Shift Details - only show if work shifts */}
+                  {hasWorkShift && (
                   <div className="space-y-3">
                     {shiftA && WORK_SHIFTS.includes(shiftA) && (() => {
                       const reminder = getCabReminder(shiftA, date)
@@ -298,11 +357,13 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                       )
                     })()}
                   </div>
+                  )}
                   <p className="text-[10px] text-amber-400/50 mt-3 text-center italic">
-                    💛 Book early for a smooth ride! 💛
+                    💛 {hasWorkShift ? "Don't forget to book... unless you've got Ola/Uber money 💸" : 'Quick access to Routematic'} 💛
                   </p>
                 </div>
-              )}
+                )
+              })()}
             </div>
           </>
         ) : (

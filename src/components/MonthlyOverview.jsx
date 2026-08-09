@@ -64,7 +64,7 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
             />
           </div>
           <p className="text-xs text-center text-amber-400/50 mt-2">
-            {stats.matching > 0 ? `${stats.matching} beautiful days together! 🌼` : 'Add shifts to see your bloom rate!'}
+            {stats.matching > 0 ? `${stats.matching} beautiful days together in ${format(selectedMonth, 'MMMM')}! 🌼` : 'Add shifts to see your bloom rate!'}
           </p>
         </div>
 
