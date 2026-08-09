@@ -222,9 +222,8 @@ function App() {
                 No roster data for this month yet
               </p>
               
-              <p className="relative z-10 text-zinc-600 text-xs max-w-xs">
-                Roster files are located in:<br/>
-                <code className="text-amber-500/60">rosters/2026/aug.json</code>
+              <p className="relative z-10 text-amber-400/40 text-xs max-w-xs">
+                🌻 Check back soon! 🐣
               </p>
               
               {/* Feature list */}
