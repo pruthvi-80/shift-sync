@@ -3,7 +3,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'dat
 import { getShiftInfo, doShiftsMatch, SHIFT_CODES } from '../utils/shiftCodes'
 import { isIndianToday } from '../utils/indianTime'
 
-function MonthlyOverview({ selectedMonth, rosterData, onDaySelect, currentDayIndex }) {
+function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIndex }) {
   const daysInMonth = useMemo(() => eachDayOfInterval({
     start: startOfMonth(selectedMonth),
     end: endOfMonth(selectedMonth)
@@ -19,7 +19,7 @@ function MonthlyOverview({ selectedMonth, rosterData, onDaySelect, currentDayInd
 
     daysInMonth.forEach(day => {
       const key = format(day, 'yyyy-MM-dd')
-      const dayData = rosterData[key]
+      const dayData = roasterData[key]
       if (dayData && dayData.userA && dayData.userB) {
         total++
         if (doShiftsMatch(dayData.userA, dayData.userB)) {
@@ -29,7 +29,7 @@ function MonthlyOverview({ selectedMonth, rosterData, onDaySelect, currentDayInd
     })
 
     return { matching, total, percentage: total > 0 ? Math.round((matching / total) * 100) : 0 }
-  }, [daysInMonth, rosterData])
+  }, [daysInMonth, roasterData])
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -89,7 +89,7 @@ function MonthlyOverview({ selectedMonth, rosterData, onDaySelect, currentDayInd
             {/* Day cells */}
             {daysInMonth.map((day, index) => {
               const key = format(day, 'yyyy-MM-dd')
-              const dayData = rosterData[key]
+              const dayData = roasterData[key]
               const isMatching = dayData && doShiftsMatch(dayData.userA, dayData.userB)
               const hasData = dayData && dayData.userA && dayData.userB
               const isCurrentDay = isIndianToday(day)

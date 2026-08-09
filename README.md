@@ -1,4 +1,6 @@
-# Shift Sync
+# Sunflower Sync 🌻
+
+A beautiful shift tracking PWA made with love for Snehaa 💛
 
 A responsive Progressive Web Application (PWA) for comparing daily work shifts between two users across a selected month.
 

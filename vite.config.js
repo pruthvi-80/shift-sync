@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Shift Sync',
-        short_name: 'ShiftSync',
+        name: 'Sunflower Sync 🌻',
+        short_name: 'Sunflower',
         description: 'Compare daily work shifts between two users',
         theme_color: '#6366f1',
         background_color: '#0f172a',

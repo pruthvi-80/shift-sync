@@ -1,22 +1,31 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
-import { fetchRosterForMonth } from './utils/storage'
+import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
-import { getIndianDate, isIndianToday, getIndianMonth } from './utils/indianTime'
+import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [view, setView] = useState('daily') // 'daily', 'monthly'
   const [selectedMonth, setSelectedMonth] = useState(getIndianMonth())
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
-  const [rosterData, setRosterData] = useState(null)
+  const [roasterData, setRoasterData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [userNames] = useState({ userA: 'Snehaa 🌻', userB: 'P🌍' })
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const [todayShift, setTodayShift] = useState(null)
+
+  // Fetch today's shift for splash greeting
+  useEffect(() => {
+    fetchTodayShift().then(shift => setTodayShift(shift))
+  }, [])
+
+  // Memoize splash greeting with shift awareness
+  const splashGreeting = useMemo(() => getSplashGreeting(todayShift), [todayShift])
 
   // Get all days of the selected month
   const daysInMonth = eachDayOfInterval({
@@ -24,22 +33,22 @@ function App() {
     end: endOfMonth(selectedMonth)
   })
 
-  // Load roster data from JSON files
+  // Load roaster data from JSON files
   useEffect(() => {
-    async function loadRoster() {
+    async function loadRoaster() {
       setLoading(true)
       const year = selectedMonth.getFullYear()
       const month = selectedMonth.getMonth()
-      const data = await fetchRosterForMonth(year, month)
-      setRosterData(data)
+      const data = await fetchRoasterForMonth(year, month)
+      setRoasterData(data)
       setLoading(false)
     }
-    loadRoster()
+    loadRoaster()
   }, [selectedMonth])
 
   // Find today's index (using Indian timezone) when data loads
   useEffect(() => {
-    if (rosterData && daysInMonth.length > 0) {
+    if (roasterData && daysInMonth.length > 0) {
       const todayIndex = daysInMonth.findIndex(day => isIndianToday(day))
       if (todayIndex !== -1) {
         setCurrentDayIndex(todayIndex)
@@ -58,7 +67,7 @@ function App() {
         setCurrentDayIndex(nearestIndex)
       }
     }
-  }, [rosterData, selectedMonth])
+  }, [roasterData, selectedMonth])
 
   // PWA install prompt
   useEffect(() => {
@@ -103,7 +112,7 @@ function App() {
 
   const currentDay = daysInMonth[currentDayIndex]
   const currentDayKey = currentDay ? format(currentDay, 'yyyy-MM-dd') : null
-  const dayData = rosterData && currentDayKey ? rosterData[currentDayKey] : null
+  const dayData = roasterData && currentDayKey ? roasterData[currentDayKey] : null
 
   return (
     <div className="h-full w-full flex flex-col bg-[#09090b]">
@@ -144,11 +153,17 @@ function App() {
             
             {/* Title */}
             <h1 className="text-4xl font-bold font-display text-amber-100 mb-3 animate-slide-up">
-              Shift Roster
+              Sunflower Sync 🌻
             </h1>
             
+            {/* Time-based Greeting */}
+            <div className="mb-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+              <p className="text-2xl text-amber-300 font-semibold">{splashGreeting.text}</p>
+              <p className="text-amber-400/70 text-sm mt-1">{splashGreeting.subtitle}</p>
+            </div>
+            
             {/* Tagline */}
-            <p className="text-xl text-amber-400 font-medium mb-2 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-lg text-amber-400/80 font-medium mb-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
               Bloom for Sunflower 🌻
             </p>
             
@@ -173,7 +188,7 @@ function App() {
       <Header 
         view={view} 
         setView={setView} 
-        hasData={!!rosterData}
+        hasData={!!roasterData}
         selectedMonth={selectedMonth}
         onMonthChange={handleMonthChange}
         loading={loading}
@@ -186,9 +201,9 @@ function App() {
               <div className="w-16 h-16 rounded-2xl sunflower-gradient flex items-center justify-center shadow-lg glow-sunflower animate-pulse">
                 <span className="text-3xl">🌻</span>
               </div>
-              <p className="text-amber-400/60 mt-4 text-sm">Loading roster...</p>
+              <p className="text-amber-400/60 mt-4 text-sm">Loading roaster...</p>
             </div>
-          ) : rosterData ? (
+          ) : roasterData ? (
             <DailyView
               date={currentDay}
               dayData={dayData}
@@ -219,7 +234,7 @@ function App() {
                 For my beautiful sunflower 💛
               </p>
               <p className="relative z-10 text-zinc-500 mb-8 max-w-xs text-sm leading-relaxed">
-                No roster data for this month yet
+                No roaster data for this month yet
               </p>
               
               <p className="relative z-10 text-amber-400/40 text-xs max-w-xs">
@@ -245,10 +260,10 @@ function App() {
           )
         )}
         
-        {view === 'monthly' && rosterData && (
+        {view === 'monthly' && roasterData && (
           <MonthlyOverview
             selectedMonth={selectedMonth}
-            rosterData={rosterData}
+            roasterData={roasterData}
             onDaySelect={handleDaySelect}
             currentDayIndex={currentDayIndex}
           />
