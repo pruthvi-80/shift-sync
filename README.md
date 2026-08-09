@@ -1,7 +1,5 @@
 # Sunflower Sync 🌻
 
-A beautiful shift tracking PWA made with love for Snehaa 💛
-
 A responsive Progressive Web Application (PWA) for comparing daily work shifts between two users across a selected month.
 
 ## Features
@@ -57,16 +55,6 @@ npm run preview
 - **date-fns** - Date manipulation
 - **canvas-confetti** - Celebration animations
 - **vite-plugin-pwa** - PWA support
-
-## Usage
-
-1. Click "Enter Your Roster" to input shift data
-2. Select the month you want to track
-3. Use "Quick Fill" to quickly set the same shift for all days
-4. Or manually select shifts for each day
-5. Click "Save Roster" to save your data
-6. Navigate between days using buttons, keyboard arrows, or swipe gestures
-7. View the monthly overview to see all matching days at a glance
 
 ## License
 
