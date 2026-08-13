@@ -1360,8 +1360,8 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
               />
             )}
 
-            {/* Countdown to Next Off */}
-            {roasterData && (
+            {/* Countdown to Next Off - Only show on today */}
+            {roasterData && isSameDay(date, getIndianDate()) && (
               <CountdownToOff roasterData={roasterData} />
             )}
 
