@@ -75,96 +75,129 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
   }
 
   return (
-    <header className={`px-3 py-2 surface-1 ${expanded ? '' : 'border-b border-amber-900/30'}`}>
-      <div className="flex items-center justify-between max-w-lg mx-auto gap-2">
-        {/* Left: Logo + Greeting + Weather */}
-        <div 
-          className="flex items-center gap-2 min-w-0 flex-shrink cursor-pointer"
-          onClick={() => setExpanded(!expanded)}
-        >
-          <div className="w-10 h-10 rounded-lg sunflower-gradient flex items-center justify-center shadow-lg flex-shrink-0 overflow-visible">
-            <span className="text-xl leading-none">🌻</span>
-          </div>
-          <div className="min-w-0">
-            <h1 className={`text-sm font-bold text-amber-100 font-display ${expanded ? '' : 'truncate'}`}>
-              {greeting.text}
-            </h1>
-            <div className={`flex items-center gap-1.5 text-[10px] ${expanded ? 'flex-wrap' : ''}`}>
-              <span className={`text-amber-400/70 ${expanded ? '' : 'truncate max-w-[100px]'}`}>
-                {shiftSubtitle ? shiftSubtitle.text : greeting.subtitle}
-              </span>
-              <span className="text-amber-600">•</span>
-              <span className="text-amber-300 font-medium whitespace-nowrap">{timeString}</span>
-              {weather && (
-                <>
-                  <span className="text-amber-600">•</span>
-                  <span className="flex items-center gap-0.5 text-zinc-400 whitespace-nowrap" title={`${weather.location}: ${weather.desc}`}>
-                    <span className="text-sm">{weather.icon}</span>
-                    <span className="font-medium">{weather.temp}°</span>
-                  </span>
-                </>
-              )}
+    <header className="surface-1 border-b border-amber-900/30">
+      {/* Main Header Row */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          {/* Left: Logo + Greeting */}
+          <div 
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => setExpanded(!expanded)}
+          >
+            <div className="w-11 h-11 rounded-xl sunflower-gradient flex items-center justify-center shadow-lg">
+              <span className="text-2xl">🌻</span>
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-amber-100 font-display leading-tight">
+                {greeting.text}
+              </h1>
+              <p className="text-xs text-amber-400/60 mt-0.5">
+                {timeString}
+              </p>
             </div>
           </div>
-        </div>
-        
-        {/* Right: Month Nav + View Toggle */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {/* Month Navigation */}
-          <div className="flex items-center rounded-lg surface-2 border border-amber-900/20">
-            <button
-              onClick={handlePrevMonth}
-              disabled={loading}
-              className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span className="px-1.5 text-xs font-semibold text-amber-200 whitespace-nowrap">
-              {monthYearString}
-            </span>
-            <button
-              onClick={handleNextMonth}
-              disabled={loading}
-              className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+          
+          {/* Right: Month Nav + View Toggle */}
+          <div className="flex items-center gap-2">
+            {/* Month Navigation */}
+            <div className="flex items-center rounded-lg surface-2 border border-amber-900/20">
+              <button
+                onClick={handlePrevMonth}
+                disabled={loading}
+                className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="px-2 text-xs font-semibold text-amber-200 whitespace-nowrap">
+                {monthYearString}
+              </span>
+              <button
+                onClick={handleNextMonth}
+                disabled={loading}
+                className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
 
-          {/* View Toggle */}
-          {hasData && (
-            <nav className="flex items-center gap-0.5 p-0.5 rounded-lg surface-2 border border-amber-900/20">
-              {['daily', 'monthly'].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`p-1.5 rounded-md text-sm transition-all ${
-                    view === v
-                      ? 'sunflower-gradient text-white shadow-md'
-                      : 'text-zinc-400 hover:text-amber-300'
-                  }`}
-                >
-                  {v === 'daily' ? '📅' : '📊'}
-                </button>
-              ))}
-            </nav>
+            {/* View Toggle */}
+            {hasData && (
+              <nav className="flex items-center gap-0.5 p-0.5 rounded-lg surface-2 border border-amber-900/20">
+                {['daily', 'monthly'].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`p-1.5 rounded-md text-sm transition-all ${
+                      view === v
+                        ? 'sunflower-gradient text-white shadow-md'
+                        : 'text-zinc-400 hover:text-amber-300'
+                    }`}
+                  >
+                    {v === 'daily' ? '📅' : '📊'}
+                  </button>
+                ))}
+              </nav>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Info Strip - Shift + Weather (always visible) */}
+      <div 
+        className="px-4 py-2 bg-amber-950/20 cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center justify-center gap-4 max-w-lg mx-auto text-xs">
+          {/* Shift Info */}
+          {shiftSubtitle && (
+            <span className="flex items-center gap-1.5 text-amber-300">
+              <span>{shiftSubtitle.icon}</span>
+              <span className="font-medium">{shiftSubtitle.text}</span>
+            </span>
           )}
+          
+          {/* Weather - Compact */}
+          {weather && (
+            <>
+              {shiftSubtitle && <span className="text-amber-700">•</span>}
+              <span className="flex items-center gap-1.5 text-zinc-400">
+                <span className="text-base">{weather.icon}</span>
+                <span className="font-medium">{weather.temp}°C</span>
+              </span>
+            </>
+          )}
+          
+          {/* Expand indicator */}
+          <svg 
+            className={`w-3.5 h-3.5 text-amber-600 transition-transform ${expanded ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
       </div>
       
       {/* Expanded Weather Detail */}
       {expanded && weather && (
-        <div className="mt-2 pt-2 pb-2 border-t border-b border-amber-900/30 max-w-lg mx-auto">
-          <div className="flex flex-col items-center gap-1 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">{weather.icon}</span>
-              <span className="text-amber-200 font-semibold">{weather.temp}°C • {weather.desc}</span>
+        <div className="px-4 py-3 bg-amber-950/30 border-t border-amber-900/20">
+          <div className="flex flex-col items-center gap-2 max-w-lg mx-auto">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{weather.icon}</span>
+              <div className="text-center">
+                <p className="text-lg font-bold text-amber-200">{weather.temp}°C</p>
+                <p className="text-xs text-zinc-400 capitalize">{weather.desc}</p>
+              </div>
             </div>
-            <p className="text-amber-400/60 text-[11px]">📍 {weather.location}</p>
+            <p className="text-amber-400/50 text-[11px] flex items-center gap-1">
+              <span>📍</span>
+              <span>{weather.location}</span>
+            </p>
           </div>
         </div>
       )}

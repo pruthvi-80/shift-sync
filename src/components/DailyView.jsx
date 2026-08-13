@@ -148,7 +148,7 @@ const getShiftTheme = (shift) => {
         icon: '😴',
         scene: 'relax',
         particles: ['🌻', '💛', '😴', '🛋️', '🎉', '✨'],
-        greeting: 'Rest Day Queen!',
+        greeting: 'Rest Day Vibes!',
         colors: { primary: '#34d399', secondary: '#10b981' },
         celebration: true
       }
@@ -558,14 +558,14 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                   <div className="mt-4 text-center">
                     <p className="text-sm font-medium opacity-70" style={{ color: theme.colors.primary }}>
                       {shift === 'H' && '🎉 Holiday mood activated!'}
-                      {shift === 'SDO' && '⭐ Special day, special queen!'}
+                      {shift === 'SDO' && '⭐ Special day, enjoy it!'}
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Cab Booking Reminder - Only for work shifts */}
+            {/* Cab Booking Reminder - For work shifts */}
             {isWorkShift && (() => {
               const dayOfWeek = getDay(date)
               const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
@@ -596,41 +596,55 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                     </a>
                   </div>
                   
-                  {isWeekend ? (
-                    <div className="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                      <p className="text-[11px] text-orange-300 text-center">
-                        ⚠️ Cab booking not available on weekends
-                      </p>
+                  {/* Cab Status - Always show timing */}
+                  <div className="space-y-2 text-xs mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-500">Cab for:</span>
+                      <span className="text-amber-200 font-semibold">{shiftInfo.label}</span>
                     </div>
-                  ) : reminder && (
-                    <div className="space-y-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-zinc-500">Timing:</span>
-                        <span className="text-amber-200 font-semibold">{shiftInfo.timing}</span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-500">Timing:</span>
+                      <span className="text-amber-200 font-semibold">{shiftInfo.timing}</span>
+                    </div>
+                    {!isWeekend && reminder && (
                       <div className="flex items-center gap-2">
                         <span className="text-zinc-500">Book by:</span>
                         <span className="text-amber-400 font-bold">{reminder.bookBy}</span>
                         {reminder.isMonday && <span className="text-orange-400 text-[10px]">🚨 Friday!</span>}
                       </div>
+                    )}
+                  </div>
+                  
+                  {/* Weekend Warning */}
+                  {isWeekend && (
+                    <div className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/20 mb-3">
+                      <p className="text-[11px] text-orange-300 text-center font-medium">
+                        ⚠️ Cab booking not available on weekends!
+                      </p>
+                      <p className="text-[10px] text-orange-400/70 text-center mt-1">
+                        Book your {shiftInfo.label.toLowerCase()} cab on Friday 📅
+                      </p>
                     </div>
                   )}
                   
-                  <p className="text-[10px] text-amber-400/50 mt-3 text-center italic">
+                  <p className="text-[10px] text-amber-400/50 text-center italic">
                     💛 Don't forget to book... unless you've got Ola/Uber money 💸 💛
                   </p>
                 </div>
               )
             })()}
 
-            {/* Quick Routematic Access for Off Days */}
+            {/* Cab Status for Off Days */}
             {isOffDay && (
-              <div className="p-3 rounded-xl surface-1 border border-zinc-700/50">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-500">Quick access</span>
+              <div className="p-4 rounded-2xl surface-1 border border-zinc-700/50 bg-zinc-800/30">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🚖</span>
+                    <h4 className="text-sm font-bold text-zinc-400 font-display">Routematic Cab</h4>
+                  </div>
                   <a 
                     href="#"
-                    className="px-2 py-1 rounded-lg bg-zinc-700/50 text-zinc-400 text-xs flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-zinc-700/50 text-zinc-400 text-xs flex items-center gap-1"
                     onClick={(e) => {
                       e.preventDefault()
                       const isAndroid = /android/i.test(navigator.userAgent)
@@ -641,10 +655,23 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                       }
                     }}
                   >
-                    <span>🚖</span>
-                    <span>Routematic</span>
+                    <span>📱</span>
+                    <span>Open App</span>
                   </a>
                 </div>
+                <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <p className="text-[11px] text-emerald-300 text-center font-medium">
+                    {shift === 'WO' && '😴 Week off! No cab needed today'}
+                    {shift === 'L' && '🏖️ On leave! No cab required'}
+                    {shift === 'EL' && '🏠 Emergency leave - no cab needed'}
+                    {shift === 'CO' && '🎁 Comp off day! No cab required'}
+                    {shift === 'H' && '🎉 Holiday! No cab needed'}
+                    {shift === 'SDO' && '⭐ Special day off! No cab required'}
+                  </p>
+                </div>
+                <p className="text-[10px] text-zinc-500 text-center mt-2 italic">
+                  Enjoy your day off! 💛
+                </p>
               </div>
             )}
           </div>

@@ -44,9 +44,9 @@ export function getGreeting() {
   // Late night / early morning (12 AM - 4 AM)
   if (hour >= 0 && hour < 4) {
     const messages = [
-      { text: "Sweet Dreams 🌙", subtitle: "Rest well, my sunflower!" },
-      { text: "Counting Stars 💫", subtitle: "Think of me in your dreams" },
-      { text: "Night Night 🌻", subtitle: "Sleep tight, beautiful!" }
+      { text: "Sweet Dreams 🌙", subtitle: "Rest well, sunflower!" },
+      { text: "Counting Stars 💫", subtitle: "Wishing you peaceful dreams" },
+      { text: "Night Night 🌻", subtitle: "Sleep tight!" }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
   }
@@ -60,8 +60,8 @@ export function getGreeting() {
   if (hour >= 6 && hour < 12) {
     const messages = [
       { text: "Good Morning! 🌻", subtitle: "Bloom bright today, sunshine!" },
-      { text: "Rise & Shine! ☀️", subtitle: "My sunflower is awake!" },
-      { text: "Morning, Beautiful! 🌼", subtitle: "Time to spread happiness!" }
+      { text: "Rise & Shine! ☀️", subtitle: "Time to start the day!" },
+      { text: "Morning, Sunshine! 🌼", subtitle: "Time to spread happiness!" }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
   }
@@ -70,8 +70,8 @@ export function getGreeting() {
   if (hour >= 12 && hour < 17) {
     const messages = [
       { text: "Hello Sunshine! ☀️", subtitle: "Keep glowing like a sunflower!" },
-      { text: "Hey Beautiful! 🌻", subtitle: "Hope your day is blooming!" },
-      { text: "Afternoon Glow! 🌼", subtitle: "You make everything brighter!" }
+      { text: "Hey There! 🌻", subtitle: "Hope your day is blooming!" },
+      { text: "Afternoon Glow! 🌼", subtitle: "Have a wonderful day!" }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
   }
@@ -79,9 +79,9 @@ export function getGreeting() {
   // Evening (5 PM - 9 PM)
   if (hour >= 17 && hour < 21) {
     const messages = [
-      { text: "Golden Hour! 🌅", subtitle: "As beautiful as sunset!" },
-      { text: "Evening, Love! 🌻", subtitle: "Time to unwind, sunshine!" },
-      { text: "Twilight Magic! ✨", subtitle: "You're the brightest flower!" }
+      { text: "Golden Hour! 🌅", subtitle: "Enjoy the evening vibes!" },
+      { text: "Evening, Sunshine! 🌻", subtitle: "Time to unwind!" },
+      { text: "Twilight Magic! ✨", subtitle: "Hope you had a great day!" }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
   }
@@ -89,8 +89,8 @@ export function getGreeting() {
   // Night (9 PM - 12 AM)
   const messages = [
     { text: "Good Night! 🌙", subtitle: "Dream of sunflower fields!" },
-    { text: "Starry Night! ⭐", subtitle: "You shine even at night!" },
-    { text: "Sweet Dreams! 💛", subtitle: "Sleep well, my sunflower!" }
+    { text: "Starry Night! ⭐", subtitle: "Rest well tonight!" },
+    { text: "Sweet Dreams! 💛", subtitle: "Sleep well, sunflower!" }
   ]
   return messages[Math.floor(Math.random() * messages.length)]
 }
@@ -110,11 +110,11 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "The night belongs to you! 🦉", 
-        subtitle: "My nocturnal sunflower is on duty"
+        subtitle: "Nocturnal sunflower on duty! 🌚"
       },
       { 
-        text: "Night shift queen reporting! 👑", 
-        subtitle: "Even the moon is jealous of your glow 🌚"
+        text: "Night shift mode activated! 🌙", 
+        subtitle: "Time to own the night! 🌚"
       },
       { 
         text: "10:30 PM - 7 AM... let's go! 🌃", 
@@ -157,7 +157,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Morning warrior mode! 🌻", 
-        subtitle: "Early mornings can't defeat my sunflower!"
+        subtitle: "Early mornings can't stop you!"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -183,8 +183,8 @@ export function getSplashGreeting(shift = null) {
         subtitle: "...whenever you actually wake up 🫠"
       },
       { 
-        text: "Evening shift queen! 👑", 
-        subtitle: "No 6 AM alarm today, lucky sunflower!"
+        text: "Evening shift time! 🌆", 
+        subtitle: "No 6 AM alarm today, nice!"
       },
       { 
         text: "Afternoon duty calls! 📞", 
@@ -207,11 +207,11 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "No work today! 🌻", 
-        subtitle: "What adventures await my sunflower? 🫠"
+        subtitle: "What adventures await today? 🫠"
       },
       { 
-        text: "Rest day, queen! 👑", 
-        subtitle: "Netflix and chill or roaster obsession? 😼"
+        text: "Rest day vibes! 🛋️", 
+        subtitle: "Netflix time or checking the roaster? 😼"
       },
       { 
         text: "Week off energy! 💫", 
@@ -219,7 +219,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Freedom day! 🦋", 
-        subtitle: "What will my sunflower do today?"
+        subtitle: "What will you do today?"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -230,7 +230,7 @@ export function getSplashGreeting(shift = null) {
     const messages = [
       { 
         text: "On leave today! 🏖️", 
-        subtitle: "Enjoy your day off, beautiful sunflower 💛"
+        subtitle: "Enjoy your day off, sunflower! 💛"
       },
       { 
         text: "Leave day vibes! 🌻", 
@@ -238,7 +238,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Taking a break? 🐣", 
-        subtitle: "Self-care queen doing self-care things!"
+        subtitle: "Self-care time! You deserve it!"
       },
       { 
         text: "Leave approved! ✅", 
@@ -261,7 +261,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Festive day! 🪔", 
-        subtitle: "Enjoy the holiday, my sunflower!"
+        subtitle: "Enjoy the holiday, Sunflower!"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -276,7 +276,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Skill upgrade loading... ⏳", 
-        subtitle: "My sunflower is leveling up! 😼"
+        subtitle: "Leveling up today! 😼"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -297,7 +297,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Who needs sleep anyway? 🫠", 
-        subtitle: "Not my little nocturnal sunflower!"
+        subtitle: "Not this nocturnal sunflower!"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -331,11 +331,11 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "The sun isn't even ready! ☀️", 
-        subtitle: "But here you are, my early sunflower"
+        subtitle: "But here you are, early bird!"
       },
       { 
         text: "Is this... a miracle? 🐣", 
-        subtitle: "My sunflower actually woke up early!"
+        subtitle: "Actually woke up early! Impressive!"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -350,10 +350,10 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Rise and shine, Sleepyhead! ☀️", 
-        subtitle: "Your roaster awaits, beautiful 💛"
+        subtitle: "Your roaster awaits! 💛"
       },
       { 
-        text: "Morning, my sunflower! 🌼", 
+        text: "Morning, Sunflower! 🌼", 
         subtitle: "Ready to see when we match? 😼"
       }
     ]
@@ -392,7 +392,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Hey there, day-shifter! 💛", 
-        subtitle: "Time flies when you're this cute"
+        subtitle: "Time flies when you're having fun!"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -407,7 +407,7 @@ export function getSplashGreeting(shift = null) {
       },
       { 
         text: "Hello, evening bloom! 🌻", 
-        subtitle: "Tea time for my sunflower? 🍵"
+        subtitle: "Tea time, maybe? 🍵"
       }
     ]
     return messages[Math.floor(Math.random() * messages.length)]
@@ -417,11 +417,11 @@ export function getSplashGreeting(shift = null) {
   if (hour >= 18 && hour < 21) {
     const messages = [
       { 
-        text: "Golden hour, golden girl! 🌅", 
-        subtitle: "You're prettier than any sunset 💛"
+        text: "Golden hour vibes! 🌅", 
+        subtitle: "Evenings are the best, right? 💛"
       },
       { 
-        text: "Evening, my sunflower! 🌻", 
+        text: "Evening, Sunflower! 🌻", 
         subtitle: "Done with work or just starting? 😼"
       },
       { 
@@ -439,7 +439,7 @@ export function getSplashGreeting(shift = null) {
       subtitle: "Your natural habitat, I see 🦉"
     },
     { 
-      text: "Evening, Night Flower! 🌻", 
+      text: "Evening, Night Owl! 🌻", 
       subtitle: "Ready for some roaster stalking? 😼"
     },
     { 

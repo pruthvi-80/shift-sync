@@ -1,6 +1,6 @@
 
 
-# Snehaa's Roster 🌻
+# Snehaa's Shift Roster 🌻
 
 A beautiful monthly shift roster app for Snehaa.
 

@@ -153,7 +153,7 @@ function App() {
             
             {/* Title */}
             <h1 className="text-4xl font-bold font-display text-amber-100 mb-3 animate-slide-up">
-              Snehaa's Roster 🌻
+              Snehaa's Shift Roster 🌻
             </h1>
             
             {/* Time-based Greeting */}
@@ -162,18 +162,8 @@ function App() {
               <p className="text-amber-400/70 text-sm mt-1">{splashGreeting.subtitle}</p>
             </div>
             
-            {/* Tagline */}
-            <p className="text-lg text-amber-400/80 font-medium mb-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              For Sunflower 🌻
-            </p>
-            
-            {/* Subtitle */}
-            <p className="text-amber-300/60 text-sm animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              Made with 💛 for her 🐣
-            </p>
-            
             {/* Emoji row */}
-            <div className="flex items-center gap-3 mt-4 animate-slide-up" style={{ animationDelay: '0.6s' }}>
+            <div className="flex items-center gap-3 mt-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
               <span className="text-4xl animate-bounce-slow">🐣</span>
             </div>
             
@@ -229,7 +219,7 @@ function App() {
               </div>
               
               <h2 className="relative z-10 text-3xl font-bold mb-2 font-display text-amber-100">
-                Snehaa's Roster
+                Snehaa's Shift Roster
               </h2>
               <p className="relative z-10 text-amber-400/60 mb-2 text-sm">
                 For Sunflower 💛
@@ -254,7 +244,7 @@ function App() {
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="text-amber-400">✨</span>
-                  Made with love for her 🐣
+                  Made with care 🌻
                 </span>
               </div>
             </div>

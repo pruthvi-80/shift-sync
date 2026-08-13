@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: "Snehaa's Roster 🌻",
+        name: "Snehaa's Shift Roster 🌻",
         short_name: 'Roster',
         description: "Monthly shift roster for Snehaa - Made with love",
         theme_color: '#fbbf24',
