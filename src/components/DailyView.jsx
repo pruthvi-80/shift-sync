@@ -1,8 +1,54 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { format, getDay, subDays, previousFriday, addDays, differenceInDays, isSameDay } from 'date-fns'
+import { format, getDay, subDays, previousFriday, addDays, differenceInDays, isSameDay, startOfMonth, endOfMonth, getDaysInMonth, getDate, isSunday, isSaturday, setDate, getMonth, getYear } from 'date-fns'
 import { getShiftInfo, WORK_SHIFTS } from '../utils/shiftCodes'
 import { fireHearts } from '../utils/confetti'
 import { isIndianToday, getIndianHour, getIndianDate } from '../utils/indianTime'
+
+// Daily motivational quotes
+const DAILY_QUOTES = [
+  { quote: "You're doing amazing, sweetie! 💛", author: "Universe" },
+  { quote: "One shift at a time, one day at a time.", author: "Wisdom" },
+  { quote: "Your hard work is building your dreams.", author: "Success" },
+  { quote: "Even flowers need rest to bloom.", author: "Nature" },
+  { quote: "Today is full of possibilities!", author: "Hope" },
+  { quote: "You've got this, Sunflower! 🌻", author: "ShiftSync" },
+  { quote: "Small steps lead to big achievements.", author: "Progress" },
+  { quote: "Rest is not lazy, it's necessary.", author: "Self-care" },
+  { quote: "Your energy is your superpower.", author: "Wellness" },
+  { quote: "Every day is a fresh start.", author: "New Day" },
+  { quote: "Be proud of how far you've come.", author: "Growth" },
+  { quote: "You make the world brighter! ✨", author: "Truth" },
+  { quote: "Balance work and joy, always.", author: "Life" },
+  { quote: "Your dedication is inspiring!", author: "Admiration" },
+  { quote: "Take care of yourself first.", author: "Love" },
+]
+
+// Indian national holidays (fixed dates)
+const INDIAN_HOLIDAYS = [
+  { month: 1, day: 26, name: 'Republic Day' },
+  { month: 8, day: 15, name: 'Independence Day' },
+  { month: 10, day: 2, name: 'Gandhi Jayanti' },
+]
+
+// Check if a date is a national holiday
+const isNationalHoliday = (date) => {
+  const month = getMonth(date) + 1 // getMonth is 0-indexed
+  const day = getDate(date)
+  return INDIAN_HOLIDAYS.some(h => h.month === month && h.day === day)
+}
+
+// Get actual payday (28th adjusted for weekends/holidays)
+const getActualPayday = (year, month) => {
+  // Start with 28th of the month
+  let payday = new Date(year, month, 28)
+  
+  // Keep moving back until we find a working day
+  while (isSunday(payday) || isSaturday(payday) || isNationalHoliday(payday)) {
+    payday = subDays(payday, 1)
+  }
+  
+  return payday
+}
 
 // Work tips with emojis - shown for work shifts
 const WORK_TIPS = [
@@ -758,6 +804,454 @@ function ShiftStatistics({ roasterData, daysInMonth }) {
   )
 }
 
+// Sleep Reminder Component
+function SleepReminder({ roasterData, currentDate }) {
+  const tomorrow = addDays(currentDate, 1)
+  const tomorrowKey = format(tomorrow, 'yyyy-MM-dd')
+  const tomorrowShift = roasterData?.[tomorrowKey]?.userA
+  
+  if (!tomorrowShift || !WORK_SHIFTS.includes(tomorrowShift)) return null
+  
+  const shiftInfo = getShiftInfo(tomorrowShift)
+  
+  // Sleep recommendations based on shift
+  const getSleepTime = () => {
+    switch(tomorrowShift) {
+      case 'M': return { time: '10:00 PM', wake: '5:30 AM', emoji: '🌅' }
+      case 'A': return { time: '11:00 PM', wake: '7:30 AM', emoji: '☀️' }
+      case 'N': return { time: '2:00 AM', wake: '10:00 AM', emoji: '🌙' }
+      case 'STS': return { time: '10:30 PM', wake: '6:30 AM', emoji: '💼' }
+      case 'US1': return { time: '3:00 PM', wake: '10:00 PM', emoji: '🇺🇸' }
+      default: return null
+    }
+  }
+  
+  const sleepData = getSleepTime()
+  if (!sleepData) return null
+  
+  return (
+    <div className="p-3 rounded-xl surface-1 border border-indigo-900/30">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-indigo-900/40 flex items-center justify-center">
+          <span className="text-xl">💤</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-indigo-300 font-medium">Tomorrow is {shiftInfo.label} {sleepData.emoji}</p>
+          <p className="text-zinc-300 text-sm font-semibold">Sleep by {sleepData.time}</p>
+          <p className="text-zinc-500 text-[10px]">Wake up around {sleepData.wake}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Payday Countdown Component (28th of month, adjusted for weekends/holidays)
+function PaydayCountdown({ currentDate }) {
+  const today = currentDate
+  const currentMonth = getMonth(today)
+  const currentYear = getYear(today)
+  
+  // Get this month's payday
+  let payday = getActualPayday(currentYear, currentMonth)
+  
+  // If payday already passed this month, get next month's
+  if (today > payday) {
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear
+    payday = getActualPayday(nextYear, nextMonth)
+  }
+  
+  const daysUntilPayday = differenceInDays(payday, today)
+  
+  if (daysUntilPayday === 0) {
+    return (
+      <div className="p-3 rounded-xl surface-1 border border-emerald-900/30 bg-gradient-to-r from-emerald-900/20 to-transparent">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-900/40 flex items-center justify-center animate-pulse">
+            <span className="text-xl">💰</span>
+          </div>
+          <div>
+            <p className="text-emerald-300 font-bold text-sm">It's PAYDAY! 🎉</p>
+            <p className="text-zinc-400 text-xs">Check your account, Sunflower!</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  return (
+    <div className="p-3 rounded-xl surface-1 border border-amber-900/20">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-amber-900/30 flex items-center justify-center">
+          <span className="text-xl">💰</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-amber-300 text-xs font-medium">Payday Countdown</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-amber-400">{daysUntilPayday}</span>
+            <span className="text-zinc-400 text-sm">{daysUntilPayday === 1 ? 'day' : 'days'} to go</span>
+          </div>
+          <p className="text-zinc-500 text-[10px]">{format(payday, 'EEE, MMM d')}</p>
+        </div>
+        <span className="text-2xl opacity-50">📅</span>
+      </div>
+    </div>
+  )
+}
+
+// Work Streak Component
+function WorkStreak({ roasterData, currentDate }) {
+  const [streak, setStreak] = useState(0)
+  
+  useEffect(() => {
+    if (!roasterData) return
+    
+    let currentStreak = 0
+    let checkDate = currentDate
+    
+    // Count backwards from current date
+    for (let i = 0; i < 30; i++) {
+      const dateKey = format(checkDate, 'yyyy-MM-dd')
+      const shift = roasterData[dateKey]?.userA
+      
+      if (WORK_SHIFTS.includes(shift)) {
+        currentStreak++
+        checkDate = subDays(checkDate, 1)
+      } else {
+        break
+      }
+    }
+    
+    setStreak(currentStreak)
+  }, [roasterData, currentDate])
+  
+  if (streak < 2) return null
+  
+  const getMessage = () => {
+    if (streak >= 10) return "Incredible dedication! 🔥"
+    if (streak >= 7) return "A whole week strong! 💪"
+    if (streak >= 5) return "Keep it going! ⭐"
+    if (streak >= 3) return "Nice streak! 🌟"
+    return "Building momentum! ✨"
+  }
+  
+  return (
+    <div className="p-3 rounded-xl surface-1 border border-orange-900/30 bg-gradient-to-r from-orange-900/20 to-transparent">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <span className="text-xl">🔥</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-orange-300 text-xs font-medium">Work Streak</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-orange-400">{streak}</span>
+            <span className="text-zinc-400 text-sm">{streak === 1 ? 'day' : 'days'} in a row!</span>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] text-zinc-500">{getMessage()}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Daily Quote Component
+function DailyQuote({ currentDate }) {
+  // Use date to get a consistent quote for the day
+  const dayOfYear = Math.floor((currentDate - new Date(currentDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24))
+  const quote = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length]
+  
+  return (
+    <div className="p-4 rounded-xl surface-1 border border-amber-900/20 bg-gradient-to-br from-amber-900/10 to-transparent">
+      <div className="flex gap-3">
+        <span className="text-2xl">💭</span>
+        <div>
+          <p className="text-zinc-200 text-sm italic">"{quote.quote}"</p>
+          <p className="text-amber-400/60 text-[10px] mt-1">— {quote.author}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Sunflower Growth Component
+function SunflowerGrowth({ roasterData, daysInMonth, currentDate }) {
+  const [shiftsCompleted, setShiftsCompleted] = useState(0)
+  
+  useEffect(() => {
+    if (!roasterData || !daysInMonth) return
+    
+    let completed = 0
+    const today = currentDate
+    
+    daysInMonth.forEach(day => {
+      if (day <= today) {
+        const dateKey = format(day, 'yyyy-MM-dd')
+        const shift = roasterData[dateKey]?.userA
+        if (WORK_SHIFTS.includes(shift)) {
+          completed++
+        }
+      }
+    })
+    
+    setShiftsCompleted(completed)
+  }, [roasterData, daysInMonth, currentDate])
+  
+  // Growth stages based on shifts
+  const getGrowthStage = () => {
+    if (shiftsCompleted >= 20) return { emoji: '🌻', stage: 'Full Bloom!', color: 'text-amber-400' }
+    if (shiftsCompleted >= 15) return { emoji: '🌻', stage: 'Almost there!', color: 'text-amber-400' }
+    if (shiftsCompleted >= 10) return { emoji: '🌼', stage: 'Growing strong!', color: 'text-yellow-400' }
+    if (shiftsCompleted >= 5) return { emoji: '🌱', stage: 'Sprouting!', color: 'text-emerald-400' }
+    if (shiftsCompleted >= 1) return { emoji: '🌱', stage: 'Just planted!', color: 'text-emerald-400' }
+    return { emoji: '🫘', stage: 'Ready to grow!', color: 'text-amber-700' }
+  }
+  
+  const growth = getGrowthStage()
+  const progress = Math.min((shiftsCompleted / 20) * 100, 100)
+  
+  return (
+    <div className="p-4 rounded-xl surface-1 border border-amber-900/20">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <span className="text-4xl">{growth.emoji}</span>
+          {shiftsCompleted >= 20 && (
+            <span className="absolute -top-1 -right-1 text-sm">✨</span>
+          )}
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-zinc-400">Your Sunflower</p>
+          <p className={`font-semibold text-sm ${growth.color}`}>{growth.stage}</p>
+          <div className="mt-1.5 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-emerald-500 via-yellow-500 to-amber-500 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-zinc-500 mt-1">{shiftsCompleted}/20 shifts to full bloom</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Mood Logger Component
+function MoodLogger({ currentDate }) {
+  const dateKey = format(currentDate, 'yyyy-MM-dd')
+  const [mood, setMood] = useState(null)
+  const [saved, setSaved] = useState(false)
+  
+  const moods = [
+    { emoji: '😊', label: 'Great', color: 'bg-emerald-500/20 border-emerald-500/50' },
+    { emoji: '🙂', label: 'Good', color: 'bg-amber-500/20 border-amber-500/50' },
+    { emoji: '😐', label: 'Okay', color: 'bg-zinc-500/20 border-zinc-500/50' },
+    { emoji: '😴', label: 'Tired', color: 'bg-indigo-500/20 border-indigo-500/50' },
+    { emoji: '😤', label: 'Stressed', color: 'bg-red-500/20 border-red-500/50' },
+  ]
+  
+  // Load saved mood
+  useEffect(() => {
+    const savedMoods = JSON.parse(localStorage.getItem('shiftSync_moods') || '{}')
+    if (savedMoods[dateKey]) {
+      setMood(savedMoods[dateKey])
+      setSaved(true)
+    } else {
+      setMood(null)
+      setSaved(false)
+    }
+  }, [dateKey])
+  
+  const toggleMood = (selectedMood) => {
+    const savedMoods = JSON.parse(localStorage.getItem('shiftSync_moods') || '{}')
+    
+    // If same mood clicked, remove it (toggle off)
+    if (mood === selectedMood) {
+      delete savedMoods[dateKey]
+      localStorage.setItem('shiftSync_moods', JSON.stringify(savedMoods))
+      setMood(null)
+      setSaved(false)
+    } else {
+      // Save new mood
+      savedMoods[dateKey] = selectedMood
+      localStorage.setItem('shiftSync_moods', JSON.stringify(savedMoods))
+      setMood(selectedMood)
+      setSaved(true)
+    }
+  }
+  
+  const hour = getIndianHour()
+  const showLogger = hour >= 17 || hour < 2 // Show after 5 PM
+  
+  if (!showLogger && !saved) return null
+  
+  return (
+    <div className="p-4 rounded-xl surface-1 border border-violet-900/30">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-lg">😊</span>
+        <h4 className="text-sm font-medium text-zinc-200">How was today?</h4>
+        {saved && <span className="text-[10px] text-emerald-400 ml-auto">Saved! (tap to undo)</span>}
+      </div>
+      <div className="flex justify-between gap-2">
+        {moods.map(m => (
+          <button
+            key={m.label}
+            onClick={() => toggleMood(m.emoji)}
+            className={`flex-1 py-2 rounded-lg border transition-all ${
+              mood === m.emoji 
+                ? m.color + ' scale-105 ring-1 ring-white/20' 
+                : 'border-zinc-700 hover:border-zinc-600'
+            }`}
+          >
+            <span className="text-xl">{m.emoji}</span>
+            <p className="text-[9px] text-zinc-500 mt-0.5">{m.label}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Day Notes Component
+function DayNotes({ currentDate }) {
+  const dateKey = format(currentDate, 'yyyy-MM-dd')
+  const [note, setNote] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [saved, setSaved] = useState(false)
+  
+  // Load saved note
+  useEffect(() => {
+    const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
+    setNote(savedNotes[dateKey] || '')
+    setSaved(!!savedNotes[dateKey])
+    setIsEditing(false)
+  }, [dateKey])
+  
+  const saveNote = () => {
+    const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
+    if (note.trim()) {
+      savedNotes[dateKey] = note.trim()
+    } else {
+      delete savedNotes[dateKey]
+    }
+    localStorage.setItem('shiftSync_notes', JSON.stringify(savedNotes))
+    setSaved(!!note.trim())
+    setIsEditing(false)
+  }
+  
+  return (
+    <div className="p-4 rounded-xl surface-1 border border-zinc-800">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">📝</span>
+          <h4 className="text-sm font-medium text-zinc-200">Day Note</h4>
+        </div>
+        {!isEditing && (
+          <button 
+            onClick={() => setIsEditing(true)}
+            className="text-[10px] text-amber-400 hover:text-amber-300"
+          >
+            {note ? 'Edit' : 'Add note'}
+          </button>
+        )}
+      </div>
+      
+      {isEditing ? (
+        <div className="space-y-2">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Doctor appointment, birthday party, etc..."
+            className="w-full p-2 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-zinc-200 placeholder-zinc-500 resize-none focus:outline-none focus:border-amber-600"
+            rows={2}
+            maxLength={100}
+          />
+          <div className="flex gap-2 justify-end">
+            <button 
+              onClick={() => {
+                const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
+                setNote(savedNotes[dateKey] || '')
+                setIsEditing(false)
+              }}
+              className="px-3 py-1 text-xs text-zinc-400 hover:text-zinc-300"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={saveNote}
+              className="px-3 py-1 text-xs bg-amber-600 text-white rounded-lg hover:bg-amber-500"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        note ? (
+          <p className="text-zinc-300 text-sm bg-zinc-800/50 p-2 rounded-lg">{note}</p>
+        ) : (
+          <p className="text-zinc-500 text-xs italic">No notes for this day</p>
+        )
+      )}
+    </div>
+  )
+}
+
+// Weekly Summary Component  
+function WeeklySummary({ roasterData, currentDate }) {
+  const dayOfWeek = getDay(currentDate)
+  
+  // Only show on Sundays
+  if (!isSunday(currentDate)) return null
+  
+  // Calculate this week's stats (Mon-Sun)
+  const stats = { work: 0, off: 0, shifts: [] }
+  
+  for (let i = 6; i >= 0; i--) {
+    const day = subDays(currentDate, i)
+    const dateKey = format(day, 'yyyy-MM-dd')
+    const shift = roasterData?.[dateKey]?.userA
+    
+    if (WORK_SHIFTS.includes(shift)) {
+      stats.work++
+      stats.shifts.push({ day: format(day, 'EEE'), shift, emoji: getShiftInfo(shift).emoji })
+    } else if (shift) {
+      stats.off++
+      stats.shifts.push({ day: format(day, 'EEE'), shift, emoji: getShiftInfo(shift).emoji })
+    }
+  }
+  
+  return (
+    <div className="p-4 rounded-xl surface-1 border border-violet-900/30 bg-gradient-to-br from-violet-900/20 to-transparent">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-lg">📅</span>
+        <h4 className="text-sm font-semibold text-zinc-200">Week Recap</h4>
+        <span className="text-[10px] text-violet-400 ml-auto">This week</span>
+      </div>
+      
+      <div className="flex justify-between mb-3">
+        {stats.shifts.map((s, i) => (
+          <div key={i} className="flex flex-col items-center gap-0.5">
+            <span className="text-[10px] text-zinc-500">{s.day}</span>
+            <span className="text-lg">{s.emoji}</span>
+          </div>
+        ))}
+      </div>
+      
+      <div className="flex items-center justify-center gap-4 pt-2 border-t border-zinc-800">
+        <div className="text-center">
+          <span className="text-lg font-bold text-amber-400">{stats.work}</span>
+          <p className="text-[10px] text-zinc-500">work days</p>
+        </div>
+        <div className="w-px h-6 bg-zinc-700" />
+        <div className="text-center">
+          <span className="text-lg font-bold text-emerald-400">{stats.off}</span>
+          <p className="text-[10px] text-zinc-500">days off</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Time-of-day theme configurations
 const getShiftTheme = (shift) => {
   switch(shift) {
@@ -1372,6 +1866,55 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
                 daysInMonth={daysInMonth}
               />
             )}
+
+            {/* Sleep Reminder - Only show on today */}
+            {roasterData && isSameDay(date, getIndianDate()) && (
+              <SleepReminder 
+                roasterData={roasterData}
+                currentDate={date}
+              />
+            )}
+
+            {/* Payday Countdown - Only show on today */}
+            {isSameDay(date, getIndianDate()) && (
+              <PaydayCountdown currentDate={date} />
+            )}
+
+            {/* Work Streak - Only show on today */}
+            {roasterData && isSameDay(date, getIndianDate()) && (
+              <WorkStreak 
+                roasterData={roasterData}
+                currentDate={date}
+              />
+            )}
+
+            {/* Daily Quote - Only show on today */}
+            {isSameDay(date, getIndianDate()) && (
+              <DailyQuote currentDate={date} />
+            )}
+
+            {/* Sunflower Growth */}
+            {roasterData && daysInMonth && (
+              <SunflowerGrowth 
+                roasterData={roasterData}
+                daysInMonth={daysInMonth}
+                currentDate={date}
+              />
+            )}
+
+            {/* Weekly Summary - Only on Sundays */}
+            {roasterData && (
+              <WeeklySummary 
+                roasterData={roasterData}
+                currentDate={date}
+              />
+            )}
+
+            {/* Mood Logger */}
+            <MoodLogger currentDate={date} />
+
+            {/* Day Notes */}
+            <DayNotes currentDate={date} />
           </div>
         ) : (
           <div className="text-center flex-1 flex flex-col items-center justify-center">
