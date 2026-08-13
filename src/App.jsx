@@ -205,6 +205,8 @@ function App() {
               currentIndex={currentDayIndex}
               totalDays={daysInMonth.length}
               userNames={userNames}
+              roasterData={roasterData}
+              daysInMonth={daysInMonth}
             />
           ) : (
             <div className="min-h-full flex flex-col items-center p-8 pt-12 text-center fade-in">
