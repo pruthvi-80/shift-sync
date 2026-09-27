@@ -79,8 +79,12 @@ function ThemeSettings() {
 
       {isOpen && createPortal(
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-3" role="dialog" aria-modal="true" aria-label="Appearance settings">
-          <button onClick={() => setIsOpen(false)} className="fixed right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-zinc-950/90 text-zinc-300 shadow-lg backdrop-blur hover:bg-zinc-800 hover:text-white" aria-label="Close appearance settings">X</button>
-          <div className="appearance-panel max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-xl border p-4 pt-12 shadow-2xl sm:p-5 sm:pt-12">
+          <div className="appearance-panel relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-xl border p-4 pt-5 shadow-2xl sm:p-5 sm:pt-6">
+            <button onClick={() => setIsOpen(false)} className="appearance-close-button" aria-label="Close appearance settings">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m18 6-12 12M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
             <div className="mb-5">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">Shift Sync</p>

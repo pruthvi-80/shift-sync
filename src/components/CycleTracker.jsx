@@ -42,7 +42,7 @@ function dateFromKey(dateKey) {
   return new Date(`${dateKey}T00:00:00`)
 }
 
-function CycleTracker({ session }) {
+function CycleTracker({ session, authReady, onLogin }) {
   const [trackerData, setTrackerData] = useState(loadTrackerData)
   const [cycleLengthDraft, setCycleLengthDraft] = useState(() => String(trackerData.cycleLength))
   const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()))
@@ -257,6 +257,35 @@ function CycleTracker({ session }) {
       cycle_length: value
     })
     setSyncMessage(error ? `Cycle length saved locally; cloud sync failed: ${error.message}` : 'Cycle length synced to your account.')
+  }
+
+  if (!authReady) {
+    return (
+      <section className="cycle-access-gate" aria-label="Cycle Tracker access">
+        <p role="status">Checking your shared account…</p>
+      </section>
+    )
+  }
+
+  if (!session) {
+    return (
+      <section className="cycle-access-gate" aria-labelledby="cycle-access-title">
+        <div className="cycle-gate-copy">
+          <span className="cycle-gate-mark" aria-hidden="true">🌸</span>
+          <p className="cycle-eyebrow">PRIVATE CYCLE TRACKER</p>
+          <h2 id="cycle-access-title">Cycle care, made personal.</h2>
+          <p className="cycle-gate-description">
+            Sign in with a valid shared account to access period history, personal notes, predictions, and wellness reminders.
+          </p>
+          <button className="cycle-gate-login" type="button" onClick={onLogin}>
+            <span aria-hidden="true">🔐</span>
+            <span>Sign in to access Cycle Tracker</span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <p className="cycle-gate-privacy">Only available while signed in. Your cycle details stay with the shared account.</p>
+        </div>
+      </section>
+    )
   }
 
   return (

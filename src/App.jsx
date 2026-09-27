@@ -43,6 +43,7 @@ function App() {
   const [todayShift, setTodayShift] = useState(null)
   const [session, setSession] = useState(null)
   const [authReady, setAuthReady] = useState(false)
+  const [showAuthPanel, setShowAuthPanel] = useState(false)
   const [rosterUserData, setRosterUserData] = useState(loadRosterUserData)
   const [rosterSyncStatus, setRosterSyncStatus] = useState('')
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
@@ -311,6 +312,8 @@ function App() {
         session={session}
         authReady={authReady}
         rosterSyncStatus={rosterSyncStatus}
+        showAuthPanel={showAuthPanel}
+        setShowAuthPanel={setShowAuthPanel}
       />
 
       <nav className={`app-section-tabs${headerCollapsed ? ' has-reveal-pill' : ''}`} aria-label="App sections">
@@ -423,7 +426,11 @@ function App() {
 
         {view === 'cycle' && (
           <Suspense fallback={<div className="cycle-loading" role="status">Opening Cycle Tracker…</div>}>
-            <CycleTracker session={session} />
+            <CycleTracker
+              session={session}
+              authReady={authReady}
+              onLogin={() => setShowAuthPanel(true)}
+            />
           </Suspense>
         )}
       </main>

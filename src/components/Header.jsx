@@ -34,12 +34,11 @@ function getShiftSubtitle(shift) {
   return { text: `${timeWord}: ${info.label}`, icon: info.emoji }
 }
 
-function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift, isCollapsed, session, authReady, rosterSyncStatus }) {
+function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift, isCollapsed, session, authReady, rosterSyncStatus, showAuthPanel, setShowAuthPanel }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const [currentTime, setCurrentTime] = useState(getIndianDate())
   const [weather, setWeather] = useState(null)
   const [expanded, setExpanded] = useState(false)
-  const [showAuthPanel, setShowAuthPanel] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
@@ -67,6 +66,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
 
   useEffect(() => {
     if (!showAuthPanel) return undefined
+    setAuthClosing(false)
     const handleEscape = event => {
       if (event.key === 'Escape') closeAuthPanel()
     }
