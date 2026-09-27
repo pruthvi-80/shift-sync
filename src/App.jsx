@@ -1,13 +1,34 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react'
 import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
 import ConnectionStatus from './components/ConnectionStatus'
 import IntroSplash from './components/IntroSplash'
+const CycleTracker = lazy(() => import('./components/CycleTracker'))
+import { supabase } from './utils/supabase'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
+
+const MOODS_STORAGE_KEY = 'shiftSync_moods'
+const NOTES_STORAGE_KEY = 'shiftSync_notes'
+
+function loadRosterUserData() {
+  try {
+    return {
+      moods: JSON.parse(localStorage.getItem(MOODS_STORAGE_KEY) || '{}'),
+      notes: JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY) || '{}')
+    }
+  } catch {
+    return { moods: {}, notes: {} }
+  }
+}
+
+function saveRosterUserData(data) {
+  localStorage.setItem(MOODS_STORAGE_KEY, JSON.stringify(data.moods))
+  localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(data.notes))
+}
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -20,11 +41,109 @@ function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [todayShift, setTodayShift] = useState(null)
+  const [session, setSession] = useState(null)
+  const [authReady, setAuthReady] = useState(false)
+  const [rosterUserData, setRosterUserData] = useState(loadRosterUserData)
+  const [rosterSyncStatus, setRosterSyncStatus] = useState('')
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
   const lastScrollTop = useRef(0)
   const headerCollapsedRef = useRef(false)
   const headerScrollLockUntil = useRef(0)
   const mainScrollRef = useRef(null)
+  const rosterUserDataRef = useRef(rosterUserData)
+  const rosterSyncQueue = useRef(Promise.resolve())
+  rosterUserDataRef.current = rosterUserData
+
+  useEffect(() => {
+    if (!supabase) {
+      setAuthReady(true)
+      return undefined
+    }
+
+    let active = true
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return
+      setSession(data?.session || null)
+      setAuthReady(true)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!session || !supabase) return undefined
+
+    let active = true
+    const loadSharedRosterData = async () => {
+      setRosterSyncStatus('Loading shared roster notes…')
+      const { data, error } = await supabase
+        .from('shift_sync_user_data')
+        .select('moods, notes')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+
+      if (!active) return
+      if (error) {
+        setRosterSyncStatus(`Could not load roster notes: ${error.message}`)
+        return
+      }
+
+      const localData = loadRosterUserData()
+      let nextData
+      if (data) {
+        nextData = { moods: data.moods || {}, notes: data.notes || {} }
+      } else {
+        nextData = localData
+        const { error: importError } = await supabase.from('shift_sync_user_data').upsert({
+          user_id: session.user.id,
+          moods: nextData.moods,
+          notes: nextData.notes
+        })
+        if (!active) return
+        if (importError) {
+          setRosterSyncStatus(`Could not import this device's roster notes: ${importError.message}`)
+          return
+        }
+      }
+
+      rosterUserDataRef.current = nextData
+      setRosterUserData(nextData)
+      saveRosterUserData(nextData)
+      setRosterSyncStatus(data ? 'Roster notes and moods synced.' : 'Roster notes and moods are ready to sync.')
+    }
+
+    loadSharedRosterData()
+    return () => { active = false }
+  }, [session])
+
+  const updateRosterUserData = async (field, value) => {
+    const nextData = { ...rosterUserDataRef.current, [field]: value }
+    rosterUserDataRef.current = nextData
+    setRosterUserData(nextData)
+    saveRosterUserData(nextData)
+
+    if (!session || !supabase) {
+      setRosterSyncStatus('Saved on this device. Sign in from the header to sync.')
+      return
+    }
+
+    setRosterSyncStatus('Saving roster notes…')
+    const syncTask = rosterSyncQueue.current.then(() => supabase.from('shift_sync_user_data').upsert({
+      user_id: session.user.id,
+      moods: nextData.moods,
+      notes: nextData.notes,
+      updated_at: new Date().toISOString()
+    }))
+    rosterSyncQueue.current = syncTask.catch(() => undefined)
+    const { error } = await syncTask
+    setRosterSyncStatus(error ? `Saved locally; cloud sync failed: ${error.message}` : 'Roster notes and moods synced.')
+  }
 
   // Fetch today's shift for splash greeting
   useEffect(() => {
@@ -179,7 +298,31 @@ function App() {
         loading={loading}
         todayShift={todayShift}
         isCollapsed={headerCollapsed}
+        session={session}
+        authReady={authReady}
+        rosterSyncStatus={rosterSyncStatus}
       />
+
+      <nav className="app-section-tabs" aria-label="App sections">
+        <button
+          type="button"
+          className={view !== 'cycle' ? 'app-section-tab active' : 'app-section-tab'}
+          aria-current={view !== 'cycle' ? 'page' : undefined}
+          onClick={() => setView('daily')}
+        >
+          <span aria-hidden="true">🌻</span>
+          <span>Shift Roster</span>
+        </button>
+        <button
+          type="button"
+          className={view === 'cycle' ? 'app-section-tab active' : 'app-section-tab'}
+          aria-current={view === 'cycle' ? 'page' : undefined}
+          onClick={() => setView('cycle')}
+        >
+          <span aria-hidden="true">🌸</span>
+          <span>Cycle Tracker</span>
+        </button>
+      </nav>
 
       {headerCollapsed && (
         <button onClick={handleRosterReveal} className="header-reveal-pill" aria-label="Show roster header">
@@ -210,6 +353,10 @@ function App() {
               userNames={userNames}
               roasterData={roasterData}
               daysInMonth={daysInMonth}
+              moodData={rosterUserData.moods}
+              notesData={rosterUserData.notes}
+              onMoodDataChange={value => updateRosterUserData('moods', value)}
+              onNotesDataChange={value => updateRosterUserData('notes', value)}
             />
           ) : (
             <div className="min-h-full flex flex-col items-center p-8 pt-12 text-center fade-in">
@@ -263,6 +410,12 @@ function App() {
             onDaySelect={handleDaySelect}
             currentDayIndex={currentDayIndex}
           />
+        )}
+
+        {view === 'cycle' && (
+          <Suspense fallback={<div className="cycle-loading" role="status">Opening Cycle Tracker…</div>}>
+            <CycleTracker session={session} />
+          </Suspense>
         )}
       </main>
 

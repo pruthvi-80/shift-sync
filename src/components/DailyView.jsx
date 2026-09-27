@@ -1037,10 +1037,10 @@ function SunflowerGrowth({ roasterData, daysInMonth, currentDate }) {
 }
 
 // Mood Logger Component
-function MoodLogger({ currentDate }) {
+function MoodLogger({ currentDate, moodData = {}, onMoodDataChange }) {
   const dateKey = format(currentDate, 'yyyy-MM-dd')
-  const [mood, setMood] = useState(null)
-  const [saved, setSaved] = useState(false)
+  const mood = moodData[dateKey] || null
+  const saved = Boolean(mood)
   
   const moods = [
     { emoji: '😊', label: 'Great', color: 'bg-emerald-500/20 border-emerald-500/50' },
@@ -1050,34 +1050,17 @@ function MoodLogger({ currentDate }) {
     { emoji: '😤', label: 'Stressed', color: 'bg-red-500/20 border-red-500/50' },
   ]
   
-  // Load saved mood
-  useEffect(() => {
-    const savedMoods = JSON.parse(localStorage.getItem('shiftSync_moods') || '{}')
-    if (savedMoods[dateKey]) {
-      setMood(savedMoods[dateKey])
-      setSaved(true)
-    } else {
-      setMood(null)
-      setSaved(false)
-    }
-  }, [dateKey])
-  
   const toggleMood = (selectedMood) => {
-    const savedMoods = JSON.parse(localStorage.getItem('shiftSync_moods') || '{}')
+    const savedMoods = { ...moodData }
     
     // If same mood clicked, remove it (toggle off)
     if (mood === selectedMood) {
       delete savedMoods[dateKey]
-      localStorage.setItem('shiftSync_moods', JSON.stringify(savedMoods))
-      setMood(null)
-      setSaved(false)
     } else {
       // Save new mood
       savedMoods[dateKey] = selectedMood
-      localStorage.setItem('shiftSync_moods', JSON.stringify(savedMoods))
-      setMood(selectedMood)
-      setSaved(true)
     }
+    onMoodDataChange(savedMoods)
   }
   
   const hour = getIndianHour()
@@ -1113,29 +1096,26 @@ function MoodLogger({ currentDate }) {
 }
 
 // Day Notes Component
-function DayNotes({ currentDate }) {
+function DayNotes({ currentDate, notesData = {}, onNotesDataChange }) {
   const dateKey = format(currentDate, 'yyyy-MM-dd')
   const [note, setNote] = useState('')
   const [isEditing, setIsEditing] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const saved = Boolean(notesData[dateKey])
   
   // Load saved note
   useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
-    setNote(savedNotes[dateKey] || '')
-    setSaved(!!savedNotes[dateKey])
+    setNote(notesData[dateKey] || '')
     setIsEditing(false)
-  }, [dateKey])
+  }, [dateKey, notesData])
   
   const saveNote = () => {
-    const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
+    const savedNotes = { ...notesData }
     if (note.trim()) {
       savedNotes[dateKey] = note.trim()
     } else {
       delete savedNotes[dateKey]
     }
-    localStorage.setItem('shiftSync_notes', JSON.stringify(savedNotes))
-    setSaved(!!note.trim())
+    onNotesDataChange(savedNotes)
     setIsEditing(false)
   }
   
@@ -1169,8 +1149,7 @@ function DayNotes({ currentDate }) {
           <div className="flex gap-2 justify-end">
             <button 
               onClick={() => {
-                const savedNotes = JSON.parse(localStorage.getItem('shiftSync_notes') || '{}')
-                setNote(savedNotes[dateKey] || '')
+                setNote(notesData[dateKey] || '')
                 setIsEditing(false)
               }}
               className="px-3 py-1 text-xs text-zinc-400 hover:text-zinc-300"
@@ -1384,7 +1363,7 @@ const getShiftTheme = (shift) => {
   }
 }
 
-function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentIndex, totalDays, userNames = { userA: 'Snehaa 🌻' }, roasterData, daysInMonth }) {
+function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentIndex, totalDays, userNames = { userA: 'Snehaa 🌻' }, roasterData, daysInMonth, moodData, notesData, onMoodDataChange, onNotesDataChange }) {
   const [slideDirection, setSlideDirection] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentTipIndex, setCurrentTipIndex] = useState(0)
@@ -1911,10 +1890,10 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
             )}
 
             {/* Mood Logger */}
-            <MoodLogger currentDate={date} />
+            <MoodLogger currentDate={date} moodData={moodData} onMoodDataChange={onMoodDataChange} />
 
             {/* Day Notes */}
-            <DayNotes currentDate={date} />
+            <DayNotes currentDate={date} notesData={notesData} onNotesDataChange={onNotesDataChange} />
           </div>
         ) : (
           <div className="text-center flex-1 flex flex-col items-center justify-center">

@@ -1,8 +1,10 @@
 import { format, addMonths, subMonths } from 'date-fns'
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { getGreeting, getIndianDate, getIndianHour } from '../utils/indianTime'
 import { fetchWeather } from '../utils/weather'
 import { getShiftInfo } from '../utils/shiftCodes'
+import { isSupabaseConfigured, supabase } from '../utils/supabase'
 import ThemeSettings from './ThemeSettings'
 
 // Get shift-aware subtitle
@@ -32,11 +34,16 @@ function getShiftSubtitle(shift) {
   return { text: `${timeWord}: ${info.label}`, icon: info.emoji }
 }
 
-function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift, isCollapsed }) {
+function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift, isCollapsed, session, authReady, rosterSyncStatus }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const [currentTime, setCurrentTime] = useState(getIndianDate())
   const [weather, setWeather] = useState(null)
   const [expanded, setExpanded] = useState(false)
+  const [showAuthPanel, setShowAuthPanel] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [authBusy, setAuthBusy] = useState(false)
   const shiftSubtitle = getShiftSubtitle(todayShift)
   
   // Update time every second
@@ -46,6 +53,15 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
     }, 1000)
     return () => clearInterval(timeInterval)
   }, [])
+
+  useEffect(() => {
+    if (!showAuthPanel) return undefined
+    const handleEscape = event => {
+      if (event.key === 'Escape') setShowAuthPanel(false)
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [showAuthPanel])
 
   // Update greeting every minute
   useEffect(() => {
@@ -73,6 +89,30 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
 
   const handleNextMonth = () => {
     onMonthChange(addMonths(selectedMonth, 1))
+  }
+
+  const handleSignIn = async event => {
+    event.preventDefault()
+    if (!supabase) return
+    setAuthBusy(true)
+    setAuthError('')
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    setAuthBusy(false)
+    if (error) {
+      setAuthError(error.message)
+      return
+    }
+    setPassword('')
+    setShowAuthPanel(false)
+  }
+
+  const handleSignOut = async () => {
+    if (!supabase) return
+    setAuthBusy(true)
+    const { error } = await supabase.auth.signOut()
+    setAuthBusy(false)
+    setAuthError(error?.message || '')
+    if (!error) setShowAuthPanel(false)
   }
 
   return (
@@ -103,7 +143,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
             <ThemeSettings />
 
             {/* Month Navigation */}
-            <div className="header-month-nav flex items-center rounded-lg surface-2 border border-amber-900/20">
+            {view !== 'cycle' && <div className="header-month-nav flex items-center rounded-lg surface-2 border border-amber-900/20">
               <button
                 onClick={handlePrevMonth}
                 disabled={loading}
@@ -125,10 +165,10 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-            </div>
+            </div>}
 
             {/* View Toggle */}
-            {hasData && (
+            {hasData && view !== 'cycle' && (
               <nav className="header-view-toggle flex items-center gap-0.5 p-0.5 rounded-lg surface-2 border border-amber-900/20">
                 {['daily', 'monthly'].map((v) => (
                   <button
@@ -145,6 +185,20 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
                 ))}
               </nav>
             )}
+            <button
+              type="button"
+              className="roster-auth-trigger"
+              onClick={() => {
+                setAuthError('')
+                setShowAuthPanel(true)
+              }}
+              disabled={!authReady}
+              aria-label={session ? 'Shared account settings' : 'Log in to Shift Sync'}
+              title={session ? 'Shared account' : 'Log in to sync your data'}
+            >
+              <span aria-hidden="true">{session ? '🌻' : '↪'}</span>
+              <span>{session ? 'Snehaa' : 'Log in'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -203,6 +257,53 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
             </p>
           </div>
         </div>
+      )}
+
+      {showAuthPanel && createPortal(
+        <div className="roster-auth-backdrop" onMouseDown={event => {
+          if (event.target === event.currentTarget) setShowAuthPanel(false)
+        }}>
+          <section className="roster-auth-panel" role="dialog" aria-modal="true" aria-labelledby="roster-auth-title">
+            <button className="roster-auth-close" type="button" onClick={() => setShowAuthPanel(false)} aria-label="Close login panel">×</button>
+            <div className="roster-auth-mark" aria-hidden="true">🌻</div>
+            <p className="roster-auth-eyebrow">SHIFT SYNC</p>
+            {session ? (
+              <>
+                <h2 id="roster-auth-title">Snehaa 🌻</h2>
+                <p className="roster-auth-copy">This shared account syncs cycle logs, roster moods, and day notes across devices.</p>
+                <p className="roster-auth-status" role="status">{rosterSyncStatus || 'Cloud account is connected.'}</p>
+                <button className="roster-auth-submit" type="button" onClick={handleSignOut} disabled={authBusy}>
+                  {authBusy ? 'Signing out…' : 'Sign out'}
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 id="roster-auth-title">Welcome back</h2>
+                <p className="roster-auth-copy">Sign in to sync your shared roster and cycle tracker.</p>
+                {!isSupabaseConfigured ? (
+                  <p className="roster-auth-error" role="alert">Cloud sign-in is not configured on this deployment.</p>
+                ) : (
+                  <form className="roster-auth-form" onSubmit={handleSignIn}>
+                    <label>
+                      <span>Email</span>
+                      <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />
+                    </label>
+                    <label>
+                      <span>Password</span>
+                      <input type="password" autoComplete="current-password" minLength="6" required value={password} onChange={event => setPassword(event.target.value)} />
+                    </label>
+                    {authError && <p className="roster-auth-error" role="alert">{authError}</p>}
+                    <button className="roster-auth-submit" type="submit" disabled={authBusy}>
+                      {authBusy ? 'Signing in…' : 'Sign in'}
+                    </button>
+                  </form>
+                )}
+                <p className="roster-auth-footnote">One shared account for both of you.</p>
+              </>
+            )}
+          </section>
+        </div>,
+        document.body
       )}
     </header>
   )
