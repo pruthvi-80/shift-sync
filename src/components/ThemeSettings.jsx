@@ -4,12 +4,15 @@ import { createPortal } from 'react-dom'
 const THEMES = [
   { id: 'sunflower', name: 'Sunflower', colors: ['#fbbf24', '#f59e0b', '#18181b'] },
   { id: 'ocean', name: 'Ocean', colors: ['#22d3ee', '#0e7490', '#082f49'] },
-  { id: 'rose', name: 'Rose', colors: ['#fb7185', '#be123c', '#4c0519'] },
+  { id: 'blossom', name: 'Rose Blossom', colors: ['#f9a8d4', '#e11d48', '#4c0519'] },
   { id: 'forest', name: 'Forest', colors: ['#5eead4', '#0f766e', '#06281f'] },
   { id: 'midnight', name: 'Midnight', colors: ['#a5b4fc', '#4f46e5', '#10172a'] },
-  { id: 'sakura', name: 'Sakura', colors: ['#f9a8d4', '#db2777', '#2c1021'] },
   { id: 'aurora', name: 'Aurora', colors: ['#a7f3d0', '#38bdf8', '#082f49'] },
   { id: 'lunar', name: 'Lunar', colors: ['#e0e7ff', '#64748b', '#111827'] },
+  { id: 'ember', name: 'Ember', colors: ['#fdba74', '#ea580c', '#431407'] },
+  { id: 'orchid', name: 'Orchid', colors: ['#d8b4fe', '#9333ea', '#2e1065'] },
+  { id: 'slate', name: 'Slate', colors: ['#cbd5e1', '#475569', '#0f172a'] },
+  { id: 'citrus', name: 'Citrus', colors: ['#d9f99d', '#65a30d', '#1a2e05'] },
 ]
 
 const FONT_PAIRS = [
@@ -19,6 +22,12 @@ const FONT_PAIRS = [
   { id: 'classic', name: 'Classic', preview: 'Refined and timeless' },
 ]
 
+function getSavedTheme() {
+  const savedTheme = localStorage.getItem('shift-sync-theme')
+  if (savedTheme === 'rose' || savedTheme === 'sakura') return 'blossom'
+  return THEMES.some(option => option.id === savedTheme) ? savedTheme : 'sunflower'
+}
+
 function getSavedFont() {
   const savedFont = localStorage.getItem('shift-sync-font')
   return FONT_PAIRS.some(option => option.id === savedFont) ? savedFont : 'modern'
@@ -26,7 +35,7 @@ function getSavedFont() {
 
 function ThemeSettings() {
   const [isOpen, setIsOpen] = useState(false)
-  const [theme, setTheme] = useState(() => localStorage.getItem('shift-sync-theme') || 'sunflower')
+  const [theme, setTheme] = useState(getSavedTheme)
   const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('shift-sync-reduced-motion') === 'true')
   const [font, setFont] = useState(getSavedFont)
   const [highContrast, setHighContrast] = useState(() => localStorage.getItem('shift-sync-high-contrast') === 'true')
