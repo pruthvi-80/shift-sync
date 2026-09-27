@@ -7,7 +7,7 @@ import NotificationSettings from './components/NotificationSettings'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
-import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification, shouldSendCabReminder, markCabReminderSent } from './utils/notifications'
+import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -48,14 +48,8 @@ function App() {
       if (!prefs.enabled) return
 
       const today = new Date()
-      const tomorrow = new Date(today)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-
       const todayKey = format(today, 'yyyy-MM-dd')
-      const tomorrowKey = format(tomorrow, 'yyyy-MM-dd')
-
       const todayData = roasterData[todayKey]
-      const tomorrowData = roasterData[tomorrowKey]
 
       // Check for today's shift notification
       if (todayData && prefs.shiftNotifications) {
@@ -73,15 +67,12 @@ function App() {
         }
       }
 
-      // Check for tomorrow's cab booking reminder
-      if (tomorrowData && shouldSendCabReminder()) {
-        const tomorrowShift = tomorrowData.userA
-        if (['M', 'A'].includes(tomorrowShift)) {
-          const dayOfWeek = tomorrow.getDay()
-          const bookBy = dayOfWeek === 1 ? 'Friday 6 PM' : 'By 6 PM'
-          sendCabBookingReminder(tomorrowShift, bookBy)
-          markCabReminderSent()
-        }
+      // Check for cab booking reminders (smart logic)
+      const cabReminders = getCabRemindersForToday(roasterData)
+      if (cabReminders.length > 0) {
+        cabReminders.forEach(reminder => {
+          sendCabBookingReminder(reminder)
+        })
       }
     }
 

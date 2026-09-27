@@ -82,7 +82,102 @@ export function shouldSendNotification(todayShift) {
   return false
 }
 
-// Get cab booking reminder info (with duplicate prevention)
+// Get cab reminders for today (smart logic)
+// Returns array of shift reminders if cab booking notification should be sent
+export function getCabRemindersForToday(roasterData) {
+  const prefs = getNotificationPreferences()
+  
+  if (!prefs.enabled || !prefs.cabReminders) return []
+  
+  // Check if cab reminder was already sent today
+  const lastCabReminderKey = 'last_cab_reminder_sent'
+  const lastSent = localStorage.getItem(lastCabReminderKey)
+  const today = new Date().toDateString()
+  
+  if (lastSent === today) {
+    return [] // Already sent cab reminders today
+  }
+
+  const today_date = new Date()
+  const todayKey = getDateKey(today_date)
+  const dayOfWeek = today_date.getDay() // 0=Sun, 1=Mon, 5=Fri, 6=Sat
+
+  const reminders = []
+
+  // Only send cab reminders on certain days
+  // Send on Friday for weekend/Monday shifts
+  // Send the day before for regular weekday shifts (but NOT if next day is WO)
+  
+  if (dayOfWeek === 5) { // Friday - check for Sat, Sun, and Mon shifts
+    const saturday = getDateKey(addDays(today_date, 1))
+    const sunday = getDateKey(addDays(today_date, 2))
+    const monday = getDateKey(addDays(today_date, 3))
+    
+    // Check Saturday shift
+    if (roasterData[saturday]?.userA && ['M', 'A', 'N'].includes(roasterData[saturday].userA)) {
+      reminders.push({
+        day: 'Saturday',
+        shift: roasterData[saturday].userA,
+        bookBy: 'Friday evening',
+      })
+    }
+    
+    // Check Sunday shift
+    if (roasterData[sunday]?.userA && ['M', 'A', 'N'].includes(roasterData[sunday].userA)) {
+      reminders.push({
+        day: 'Sunday',
+        shift: roasterData[sunday].userA,
+        bookBy: 'Friday evening',
+      })
+    }
+    
+    // Check Monday shift
+    if (roasterData[monday]?.userA && ['M', 'A', 'N'].includes(roasterData[monday].userA)) {
+      reminders.push({
+        day: 'Monday',
+        shift: roasterData[monday].userA,
+        bookBy: 'Friday evening',
+      })
+    }
+  } else if (dayOfWeek !== 6 && dayOfWeek !== 0) { // Not Sat/Sun - regular weekday
+    // Check next day's shift
+    const tomorrow = getDateKey(addDays(today_date, 1))
+    const tomorrowShift = roasterData[tomorrow]?.userA
+    
+    // Only send reminder if tomorrow has a shift (M/A/N) AND is NOT WO
+    if (tomorrowShift && ['M', 'A', 'N'].includes(tomorrowShift)) {
+      reminders.push({
+        day: 'Tomorrow',
+        shift: tomorrowShift,
+        bookBy: 'By 6 PM today',
+      })
+    }
+  }
+
+  // Mark cab reminders as sent for today if there are any
+  if (reminders.length > 0) {
+    localStorage.setItem(lastCabReminderKey, today)
+  }
+
+  return reminders
+}
+
+// Helper: Get date key in YYYY-MM-DD format
+function getDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Helper: Add days to a date
+function addDays(date, days) {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
+// OLD: Get cab booking reminder info (with duplicate prevention)
 export function shouldSendCabReminder() {
   const prefs = getNotificationPreferences()
   
@@ -264,8 +359,8 @@ function triggerDirectShiftNotification(emoji, shiftName, options) {
   }
 }
 
-// Send cab booking reminder
-export function sendCabBookingReminder(shiftType, bookBy) {
+// Send cab booking reminder with shift-specific message
+export function sendCabBookingReminder(reminder) {
   if (!('Notification' in window)) {
     console.log('Notifications not supported')
     return
@@ -276,11 +371,23 @@ export function sendCabBookingReminder(shiftType, bookBy) {
     return
   }
 
+  const shiftEmoji = {
+    'M': '🌅',
+    'A': '🌞',
+    'N': '🌙',
+  }
+
+  const shiftName = {
+    'M': 'Morning',
+    'A': 'Afternoon',
+    'N': 'Night',
+  }
+
   const notificationOptions = {
     icon: '/favicon.svg',
     badge: '/favicon.svg',
-    body: `Tomorrow's shift. Book by ${bookBy}! 🚕`,
-    tag: 'cab-reminder',
+    body: `${reminder.day} ${shiftEmoji[reminder.shift]} ${shiftName[reminder.shift]} shift\nBook by: ${reminder.bookBy} 🚕`,
+    tag: `cab-reminder-${reminder.day}`,
     requireInteraction: true,
   }
 
