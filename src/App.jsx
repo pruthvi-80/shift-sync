@@ -7,7 +7,7 @@ import NotificationSettings from './components/NotificationSettings'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
-import { sendShiftNotification, sendCabBookingReminder, sendNotificationHeartbeat, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
+import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -24,19 +24,6 @@ function App() {
   // Fetch today's shift for splash greeting
   useEffect(() => {
     fetchTodayShift().then(shift => setTodayShift(shift))
-  }, [])
-
-  // Register service worker for notifications
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/notification-worker.js')
-        .then(registration => {
-          console.log('Service Worker registered:', registration)
-        })
-        .catch(error => {
-          console.log('Service Worker registration failed:', error)
-        })
-    }
   }, [])
 
   // Check for upcoming shifts and send notifications
@@ -76,15 +63,9 @@ function App() {
       }
     }
 
-    // Temporary production diagnostic: sends a notification every 10 seconds.
-    console.log('🧪 TESTING: Notifications check interval set to 10 seconds')
-    const runNotificationTest = () => {
-      checkNotifications()
-      sendNotificationHeartbeat()
-    }
-
-    runNotificationTest()
-    const interval = setInterval(runNotificationTest, 10 * 1000)
+    // Check on load and every 5 minutes.
+    checkNotifications()
+    const interval = setInterval(checkNotifications, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [roasterData])
 
