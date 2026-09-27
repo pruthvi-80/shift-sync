@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   addDays,
   differenceInCalendarDays,
@@ -48,10 +48,15 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
   const [symptoms, setSymptoms] = useState([])
   const [notes, setNotes] = useState('')
   const [syncMessage, setSyncMessage] = useState('')
+  const [isSavingPeriod, setIsSavingPeriod] = useState(false)
+  const [saveConfirmed, setSaveConfirmed] = useState(false)
+  const saveConfirmationTimer = useRef(null)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trackerData))
   }, [trackerData])
+
+  useEffect(() => () => window.clearTimeout(saveConfirmationTimer.current), [])
 
   useEffect(() => {
     if (!session || !supabase) return undefined
@@ -233,6 +238,11 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
   }), [calendarMonth])
   const monthOffset = getDay(startOfMonth(calendarMonth))
   const selectedPeriod = periods.find(period => period.startDate === startDate)
+  const selectedDateIsLogged = periods.some(period => period.startDate === startDate)
+  const selectedMonthIsLogged = periods.some(period => period.startDate.slice(0, 7) === startDate.slice(0, 7))
+  const isDuplicateMonthlyLog = selectedMonthIsLogged && !selectedDateIsLogged
+  const calendarMonthKey = format(calendarMonth, 'yyyy-MM')
+  const calendarMonthIsLogged = periods.some(period => period.startDate.slice(0, 7) === calendarMonthKey)
 
   const reminder = daysUntilExpected >= 0 && daysUntilExpected <= 3
     ? daysUntilExpected === 0
@@ -252,6 +262,10 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
 
   const handleSavePeriod = async () => {
     if (!startDate || dateFromKey(startDate) > today) return
+    if (isDuplicateMonthlyLog || isSavingPeriod) {
+      setSyncMessage('One period start can be logged per month. Select this month’s existing log to update it.')
+      return
+    }
 
     const period = {
       startDate,
@@ -264,18 +278,47 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
       periods: [...current.periods.filter(item => item.startDate !== startDate), period]
     }))
 
+    const confirmSave = () => {
+      window.clearTimeout(saveConfirmationTimer.current)
+      setSaveConfirmed(false)
+      window.requestAnimationFrame(() => setSaveConfirmed(true))
+      saveConfirmationTimer.current = window.setTimeout(() => setSaveConfirmed(false), 1100)
+    }
+
     if (session && supabase) {
+      setIsSavingPeriod(true)
       setSyncMessage('Saving your period log…')
-      const { error } = await supabase.from('period_logs').upsert({
-        user_id: session.user.id,
-        start_date: period.startDate,
-        duration: period.duration,
-        symptoms: period.symptoms,
-        notes: period.notes
-      }, { onConflict: 'user_id,start_date' })
-      setSyncMessage(error ? `Saved on this device; cloud sync failed: ${error.message}` : 'Saved and synced to your account.')
+      try {
+        const { error } = await supabase.from('period_logs').upsert({
+          user_id: session.user.id,
+          start_date: period.startDate,
+          duration: period.duration,
+          symptoms: period.symptoms,
+          notes: period.notes
+        }, { onConflict: 'user_id,start_date' })
+
+        if (error?.code === '23505') {
+          setTrackerData(current => ({
+            ...current,
+            periods: current.periods.filter(item => item.startDate !== period.startDate)
+          }))
+          setSyncMessage('A period is already logged for this month on another device. Select its existing log to update it.')
+        } else if (error) {
+          setSyncMessage(`Saved on this device; cloud sync failed: ${error.message}`)
+          confirmSave()
+        } else {
+          setSyncMessage('Saved and synced to your account.')
+          confirmSave()
+        }
+      } catch (error) {
+        setSyncMessage(`Saved on this device; cloud sync failed: ${error.message}`)
+        confirmSave()
+      } finally {
+        setIsSavingPeriod(false)
+      }
     } else {
       setSyncMessage('Saved on this device. Sign in to sync across devices.')
+      confirmSave()
     }
   }
 
@@ -423,7 +466,9 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
                 const isPredicted = predictionDates.includes(key) && !isPeriod
                 const isToday = isSameDay(day, today)
                 const isSelected = key === startDate
-                const label = `${format(day, 'MMMM d')}${isPeriod ? ', logged period' : ''}${isPredicted ? ', predicted period' : ''}${isToday ? ', today' : ''}`
+                const isLoggedStart = periods.some(period => period.startDate === key)
+                const isBlockedByMonthlyLimit = calendarMonthIsLogged && !isLoggedStart
+                const label = `${format(day, 'MMMM d')}${isPeriod ? ', logged period' : ''}${isPredicted ? ', predicted period' : ''}${isToday ? ', today' : ''}${isBlockedByMonthlyLimit ? ', a period is already logged this month' : ''}`
 
                 return (
                   <button
@@ -432,6 +477,7 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
                     role="gridcell"
                     aria-label={label}
                     aria-pressed={isSelected}
+                    disabled={isBlockedByMonthlyLimit}
                     onClick={() => handleSelectDate(key)}
                     className={`cycle-day${isPeriod ? ' logged' : ''}${isPredicted ? ' predicted' : ''}${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}`}
                   >
@@ -475,6 +521,12 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
               value={startDate}
               onChange={event => handleSelectDate(event.target.value)}
             />
+            <p className="cycle-period-limit-note">Only one period start can be logged per month.</p>
+            {isDuplicateMonthlyLog && (
+              <p className="cycle-month-limit" role="status">
+                One period start per month. Select this month’s existing log to update it.
+              </p>
+            )}
 
             <label className="cycle-field-label" htmlFor="period-duration">Period duration</label>
             <div className="cycle-duration-control">
@@ -517,8 +569,13 @@ function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
               onChange={event => setNotes(event.target.value)}
             />
 
-            <button className="cycle-save-button" type="button" onClick={handleSavePeriod}>
-              {selectedPeriod ? 'Update period log' : 'Save period log'}
+            <button
+              className={`cycle-save-button${isSavingPeriod ? ' is-saving' : ''}${saveConfirmed ? ' is-saved' : ''}`}
+              type="button"
+              onClick={handleSavePeriod}
+              disabled={isSavingPeriod || isDuplicateMonthlyLog}
+            >
+              {isSavingPeriod ? 'Saving…' : saveConfirmed ? 'Saved ✓' : isDuplicateMonthlyLog ? 'Already logged this month' : selectedPeriod ? 'Update period log' : 'Save period log'}
             </button>
             <p className="cycle-privacy-note">{session ? 'Your cycle details sync securely to your account.' : 'Your cycle details stay on this device until you sign in.'}</p>
           </section>

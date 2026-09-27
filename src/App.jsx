@@ -416,6 +416,7 @@ function App() {
               notesData={rosterUserData.notes}
               onMoodDataChange={value => updateRosterUserData('moods', value)}
               onNotesDataChange={value => updateRosterUserData('notes', value)}
+              syncStatus={rosterSyncStatus}
             />
           ) : (
             <div className="min-h-full flex flex-col items-center p-8 pt-12 text-center fade-in">

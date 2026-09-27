@@ -1037,10 +1037,18 @@ function SunflowerGrowth({ roasterData, daysInMonth, currentDate }) {
 }
 
 // Mood Logger Component
-function MoodLogger({ currentDate, moodData = {}, onMoodDataChange }) {
+function MoodLogger({ currentDate, moodData = {}, onMoodDataChange, syncStatus }) {
   const dateKey = format(currentDate, 'yyyy-MM-dd')
   const mood = moodData[dateKey] || null
   const saved = Boolean(mood)
+  const [currentHour, setCurrentHour] = useState(getIndianHour())
+  const canLogMood = currentHour >= 16
+
+  useEffect(() => {
+    const updateHour = () => setCurrentHour(getIndianHour())
+    const interval = window.setInterval(updateHour, 60_000)
+    return () => window.clearInterval(interval)
+  }, [])
   
   const moods = [
     { emoji: '😊', label: 'Great', color: 'bg-emerald-500/20 border-emerald-500/50' },
@@ -1062,25 +1070,51 @@ function MoodLogger({ currentDate, moodData = {}, onMoodDataChange }) {
     }
     onMoodDataChange(savedMoods)
   }
-  
-  const hour = getIndianHour()
-  const showLogger = hour >= 17 || hour < 2 // Show after 5 PM
-  
-  if (!showLogger && !saved) return null
+
+  const revertMood = () => {
+    if (!canLogMood || !mood) return
+    const savedMoods = { ...moodData }
+    delete savedMoods[dateKey]
+    onMoodDataChange(savedMoods)
+  }
   
   return (
     <div className="p-4 rounded-xl surface-1 border border-violet-900/30">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-lg">😊</span>
-        <h4 className="text-sm font-medium text-zinc-200">How was today?</h4>
-        {saved && <span className="text-[10px] text-emerald-400 ml-auto">Saved! (tap to undo)</span>}
+        <h4 className="text-sm font-medium text-zinc-200">How was your day?</h4>
+        {saved && (
+          <>
+            <span className="text-[10px] text-emerald-400 ml-auto">
+              {!canLogMood ? 'Saved · view only' : syncStatus?.includes('syncing') ? 'Saving…' : syncStatus?.includes('failed') ? 'Saved on device' : syncStatus?.includes('synced') ? 'Synced ✓' : 'Saved'}
+            </span>
+            {canLogMood && (
+              <button
+                type="button"
+                className="rounded-md border border-zinc-700 px-2 py-1 text-[10px] text-zinc-400 transition hover:border-rose-400/50 hover:text-rose-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-400"
+                onClick={revertMood}
+                aria-label="Revert saved mood"
+              >
+                Undo
+              </button>
+            )}
+          </>
+        )}
       </div>
+      {!canLogMood && (
+        <p className="mb-3 text-[10px] text-zinc-500">
+          {saved ? 'Mood check-in is read-only until 4 PM IST.' : 'Mood check-in opens daily at 4 PM IST.'}
+        </p>
+      )}
       <div className="flex justify-between gap-2">
         {moods.map(m => (
           <button
             key={m.label}
             onClick={() => toggleMood(m.emoji)}
-            className={`flex-1 py-2 rounded-lg border transition-all ${
+            aria-label={`How was your day: ${m.label}`}
+            aria-pressed={mood === m.emoji}
+            disabled={!canLogMood}
+            className={`flex-1 py-2 rounded-lg border transition-all disabled:cursor-not-allowed disabled:opacity-45 ${
               mood === m.emoji 
                 ? m.color + ' scale-105 ring-1 ring-white/20' 
                 : 'border-zinc-700 hover:border-zinc-600'
@@ -1363,7 +1397,7 @@ const getShiftTheme = (shift) => {
   }
 }
 
-function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentIndex, totalDays, userNames = { userA: 'Snehaa 🌻' }, roasterData, daysInMonth, moodData, notesData, onMoodDataChange, onNotesDataChange }) {
+function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentIndex, totalDays, userNames = { userA: 'Snehaa 🌻' }, roasterData, daysInMonth, moodData, notesData, onMoodDataChange, onNotesDataChange, syncStatus }) {
   const [slideDirection, setSlideDirection] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentTipIndex, setCurrentTipIndex] = useState(0)
@@ -1890,7 +1924,7 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
             )}
 
             {/* Mood Logger */}
-            <MoodLogger currentDate={date} moodData={moodData} onMoodDataChange={onMoodDataChange} />
+            <MoodLogger currentDate={date} moodData={moodData} onMoodDataChange={onMoodDataChange} syncStatus={syncStatus} />
 
             {/* Day Notes */}
             <DayNotes currentDate={date} notesData={notesData} onNotesDataChange={onNotesDataChange} />

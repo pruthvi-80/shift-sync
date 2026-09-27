@@ -51,3 +51,6 @@ begin
   end if;
 end;
 $$;
+
+create unique index if not exists period_logs_one_start_per_month_idx
+on public.period_logs (user_id, (date_trunc('month', start_date::timestamp)));
