@@ -11,6 +11,7 @@ function NotificationSettings() {
   const [prefs, setPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
   const [permissionGranted, setPermissionGranted] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [testMessage, setTestMessage] = useState('')
 
   // Load preferences on mount
   useEffect(() => {
@@ -28,6 +29,11 @@ function NotificationSettings() {
     setPermissionGranted(granted)
     if (granted) {
       saveNotificationPreferences(prefs)
+      // Add a slight delay to ensure permission is properly set
+      setTimeout(() => {
+        const status = 'Notification' in window ? Notification.permission : 'denied'
+        setPermissionGranted(status === 'granted')
+      }, 100)
     }
   }
 
@@ -39,10 +45,30 @@ function NotificationSettings() {
   }
 
   // Test notification
-  const handleTestNotification = () => {
-    if (permissionGranted) {
-      sendTestNotification()
+  const handleTestNotification = async () => {
+    if (!('Notification' in window)) {
+      setTestMessage('⚠️ Notifications not supported')
+      setTimeout(() => setTestMessage(''), 3000)
+      return
     }
+
+    // Request permission if not granted
+    if (Notification.permission !== 'granted') {
+      const granted = await requestNotificationPermission()
+      if (!granted) {
+        setTestMessage('⚠️ Please enable notifications first')
+        setTimeout(() => setTestMessage(''), 3000)
+        return
+      }
+      setPermissionGranted(true)
+    }
+
+    setTestMessage('📤 Sending test notification...')
+    sendTestNotification()
+    setTimeout(() => {
+      setTestMessage('✅ Notification sent! Check your desktop/mobile')
+      setTimeout(() => setTestMessage(''), 4000)
+    }, 500)
   }
 
   if (!showSettings) {
@@ -72,7 +98,7 @@ function NotificationSettings() {
 
         {/* Permission Status */}
         <div className="mb-4 p-3 bg-gray-800 rounded">
-          {permissionGranted ? (
+          {permissionGranted || (Notification?.permission === 'granted') ? (
             <p className="text-green-400 text-sm">✅ Notifications Enabled</p>
           ) : (
             <>
@@ -159,11 +185,21 @@ function NotificationSettings() {
             >
               Send Test Notification 🧪
             </button>
+            
+            {/* Test Message Feedback */}
+            {testMessage && (
+              <div className="mb-3 p-2 bg-blue-600/30 rounded text-center text-sm text-blue-200">
+                {testMessage}
+              </div>
+            )}
           </>
         )}
 
         <button
-          onClick={() => setShowSettings(false)}
+          onClick={() => {
+            setShowSettings(false)
+            setTestMessage('')
+          }}
           className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm transition"
         >
           Close

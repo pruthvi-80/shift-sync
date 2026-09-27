@@ -155,15 +155,46 @@ export async function requestNotificationPermission() {
 
 // Send a test notification
 export function sendTestNotification() {
-  if (Notification.permission !== 'granted') {
-    console.log('Notification permission not granted')
+  if (!('Notification' in window)) {
+    console.error('Notifications not supported')
     return
   }
 
-  const notification = new Notification('Shift Sync Test', {
+  if (Notification.permission !== 'granted') {
+    console.log('Notification permission not granted:', Notification.permission)
+    return
+  }
+
+  try {
+    // Try via Service Worker first (for PWA)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification('Shift Sync Test ✅', {
+          icon: '/favicon.svg',
+          badge: '/favicon.svg',
+          body: 'Notifications are working! 🎉',
+          tag: 'test-notification',
+          requireInteraction: false,
+        })
+      }).catch(err => {
+        console.log('Service Worker notification failed, trying direct API:', err)
+        // Fallback to direct notification
+        triggerDirectNotification()
+      })
+    } else {
+      // Fallback for non-PWA
+      triggerDirectNotification()
+    }
+  } catch (error) {
+    console.error('Error sending test notification:', error)
+  }
+}
+
+function triggerDirectNotification() {
+  const notification = new Notification('Shift Sync Test ✅', {
     icon: '/favicon.svg',
     badge: '/favicon.svg',
-    body: 'Notifications are working! ✅',
+    body: 'Notifications are working! 🎉',
     tag: 'test-notification',
   })
 
@@ -175,6 +206,11 @@ export function sendTestNotification() {
 
 // Send shift notification
 export function sendShiftNotification(shiftType, shiftTime) {
+  if (!('Notification' in window)) {
+    console.log('Notifications not supported')
+    return
+  }
+
   if (Notification.permission !== 'granted') {
     console.log('Notification permission not granted')
     return
@@ -192,14 +228,36 @@ export function sendShiftNotification(shiftType, shiftTime) {
     'N': '🌙',
   }
 
-  const notification = new Notification(`${shiftEmoji[shiftType]} ${shiftNames[shiftType]} Shift Reminder`, {
+  const notificationOptions = {
     icon: '/favicon.svg',
     badge: '/favicon.svg',
-    body: `Your shift starts at ${shiftTime}\n Don't forget your cab! 🚕`,
+    body: `Shift starts at ${shiftTime}\nDon't forget your cab! 🚕`,
     tag: `shift-${new Date().toDateString()}`,
     requireInteraction: false,
-  })
+  }
 
+  try {
+    // Try via Service Worker first (for PWA)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification(
+          `${shiftEmoji[shiftType]} ${shiftNames[shiftType]} Shift Reminder`,
+          notificationOptions
+        )
+      }).catch(err => {
+        console.log('Service Worker notification failed, trying direct:', err)
+        triggerDirectShiftNotification(shiftEmoji[shiftType], shiftNames[shiftType], notificationOptions)
+      })
+    } else {
+      triggerDirectShiftNotification(shiftEmoji[shiftType], shiftNames[shiftType], notificationOptions)
+    }
+  } catch (error) {
+    console.error('Error sending shift notification:', error)
+  }
+}
+
+function triggerDirectShiftNotification(emoji, shiftName, options) {
+  const notification = new Notification(`${emoji} ${shiftName} Shift Reminder`, options)
   notification.onclick = () => {
     window.focus()
     notification.close()
@@ -208,19 +266,43 @@ export function sendShiftNotification(shiftType, shiftTime) {
 
 // Send cab booking reminder
 export function sendCabBookingReminder(shiftType, bookBy) {
+  if (!('Notification' in window)) {
+    console.log('Notifications not supported')
+    return
+  }
+
   if (Notification.permission !== 'granted') {
     console.log('Notification permission not granted')
     return
   }
 
-  const notification = new Notification('📅 Book Your Cab', {
+  const notificationOptions = {
     icon: '/favicon.svg',
     badge: '/favicon.svg',
     body: `Tomorrow's shift. Book by ${bookBy}! 🚕`,
     tag: 'cab-reminder',
     requireInteraction: true,
-  })
+  }
 
+  try {
+    // Try via Service Worker first (for PWA)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification('📅 Book Your Cab', notificationOptions)
+      }).catch(err => {
+        console.log('Service Worker notification failed, trying direct:', err)
+        triggerDirectCabNotification(notificationOptions)
+      })
+    } else {
+      triggerDirectCabNotification(notificationOptions)
+    }
+  } catch (error) {
+    console.error('Error sending cab reminder:', error)
+  }
+}
+
+function triggerDirectCabNotification(options) {
+  const notification = new Notification('📅 Book Your Cab', options)
   notification.onclick = () => {
     window.focus()
     notification.close()
