@@ -3,11 +3,9 @@ import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
-import NotificationSettings from './components/NotificationSettings'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
-import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -25,49 +23,6 @@ function App() {
   useEffect(() => {
     fetchTodayShift().then(shift => setTodayShift(shift))
   }, [])
-
-  // Check for upcoming shifts and send notifications
-  useEffect(() => {
-    if (!roasterData) return
-
-    const checkNotifications = () => {
-      const prefs = getNotificationPreferences()
-      if (!prefs.enabled) return
-
-      const today = new Date()
-      const todayKey = format(today, 'yyyy-MM-dd')
-      const todayData = roasterData[todayKey]
-
-      // Check for today's shift notification
-      if (todayData && prefs.shiftNotifications) {
-        const todayShift = todayData.userA
-        if (['M', 'A', 'N'].includes(todayShift)) {
-          if (shouldSendNotification(todayShift)) {
-            const shiftTimes = {
-              'M': prefs.morningShiftTime,
-              'A': prefs.afternoonShiftTime,
-              'N': prefs.nightShiftTime,
-            }
-            const shiftTime = shiftTimes[todayShift]
-            sendShiftNotification(todayShift, shiftTime)
-          }
-        }
-      }
-
-      // Check for cab booking reminders (smart logic)
-      const cabReminders = getCabRemindersForToday(roasterData)
-      if (cabReminders.length > 0) {
-        cabReminders.forEach(reminder => {
-          sendCabBookingReminder(reminder)
-        })
-      }
-    }
-
-    // Check on load and every 5 minutes.
-    checkNotifications()
-    const interval = setInterval(checkNotifications, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [roasterData])
 
   // Memoize splash greeting with shift awareness
   const splashGreeting = useMemo(() => getSplashGreeting(todayShift), [todayShift])
@@ -314,8 +269,6 @@ function App() {
           onDismiss={() => setShowInstallPrompt(false)}
         />
       )}
-
-      <NotificationSettings />
     </div>
   )
 }
