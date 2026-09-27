@@ -79,13 +79,13 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
     <header className="surface-1 border-b border-amber-900/30">
       {/* Main Header Row */}
       <div className="px-4 py-3">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
+        <div className="header-main-row flex items-center justify-between max-w-lg mx-auto">
           {/* Left: Logo + Greeting */}
           <div 
-            className="flex items-center gap-3 cursor-pointer"
+            className="header-brand flex items-center gap-3 cursor-pointer"
             onClick={() => setExpanded(!expanded)}
           >
-            <div className="w-11 h-11 rounded-xl sunflower-gradient flex items-center justify-center shadow-lg">
+            <div className="header-logo w-11 h-11 rounded-xl sunflower-gradient flex items-center justify-center shadow-lg">
               <span className="text-2xl">🌻</span>
             </div>
             <div>
@@ -99,11 +99,11 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
           </div>
           
           {/* Right: Month Nav + View Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="header-controls flex items-center gap-2">
             <ThemeSettings />
 
             {/* Month Navigation */}
-            <div className="flex items-center rounded-lg surface-2 border border-amber-900/20">
+            <div className="header-month-nav flex items-center rounded-lg surface-2 border border-amber-900/20">
               <button
                 onClick={handlePrevMonth}
                 disabled={loading}
@@ -129,7 +129,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
 
             {/* View Toggle */}
             {hasData && (
-              <nav className="flex items-center gap-0.5 p-0.5 rounded-lg surface-2 border border-amber-900/20">
+              <nav className="header-view-toggle flex items-center gap-0.5 p-0.5 rounded-lg surface-2 border border-amber-900/20">
                 {['daily', 'monthly'].map((v) => (
                   <button
                     key={v}
@@ -154,12 +154,12 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
         className="px-4 py-2 bg-amber-950/20 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center justify-center gap-4 max-w-lg mx-auto text-xs">
+        <div className="header-info-content flex items-center justify-center gap-4 max-w-lg mx-auto text-xs">
           {/* Shift Info */}
           {shiftSubtitle && (
             <span className="flex items-center gap-1.5 text-amber-300">
               <span>{shiftSubtitle.icon}</span>
-              <span className="font-medium">{shiftSubtitle.text}</span>
+              <span className="header-shift-text font-medium">{shiftSubtitle.text}</span>
             </span>
           )}
           

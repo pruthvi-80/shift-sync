@@ -112,6 +112,49 @@ body {
   background: linear-gradient(145deg, #1f1f23 0%, #18181b 100%);
 }
 
+@media (max-width: 480px) {
+  .header-main-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .header-brand {
+    gap: 0.6rem;
+  }
+
+  .header-logo {
+    height: 2.4rem;
+    width: 2.4rem;
+  }
+
+  .header-brand h1 {
+    font-size: 0.9rem;
+  }
+
+  .header-controls {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .header-month-nav span {
+    min-width: 5.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    text-align: center;
+  }
+
+  .header-info-content {
+    flex-wrap: wrap;
+    gap: 0.35rem 0.7rem;
+    line-height: 1.25;
+  }
+
+  .header-shift-text {
+    font-size: 0.7rem;
+  }
+}
+
 html[data-theme='ocean'] body,
 html[data-theme='ocean'] .bg-\[\#09090b\] {
   background-color: #061923 !important;
