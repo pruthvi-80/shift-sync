@@ -3,9 +3,11 @@ import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
+import NotificationSettings from './components/NotificationSettings'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
+import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification } from './utils/notifications'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -23,6 +25,70 @@ function App() {
   useEffect(() => {
     fetchTodayShift().then(shift => setTodayShift(shift))
   }, [])
+
+  // Register service worker for notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/notification-worker.js')
+        .then(registration => {
+          console.log('Service Worker registered:', registration)
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error)
+        })
+    }
+  }, [])
+
+  // Check for upcoming shifts and send notifications
+  useEffect(() => {
+    if (!roasterData) return
+
+    const checkNotifications = () => {
+      const prefs = getNotificationPreferences()
+      if (!prefs.enabled) return
+
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const todayKey = format(today, 'yyyy-MM-dd')
+      const tomorrowKey = format(tomorrow, 'yyyy-MM-dd')
+
+      const todayData = roasterData[todayKey]
+      const tomorrowData = roasterData[tomorrowKey]
+
+      // Check for today's shift
+      if (todayData && prefs.shiftNotifications) {
+        const todayShift = todayData.userA
+        if (['M', 'A', 'N'].includes(todayShift)) {
+          const shiftTimes = {
+            'M': prefs.morningShiftTime,
+            'A': prefs.afternoonShiftTime,
+            'N': prefs.nightShiftTime,
+          }
+          const shiftTime = shiftTimes[todayShift]
+          if (shiftTime && shouldSendNotification(todayShift)) {
+            sendShiftNotification(todayShift, shiftTime)
+          }
+        }
+      }
+
+      // Check for tomorrow's cab booking
+      if (tomorrowData && prefs.cabReminders) {
+        const tomorrowShift = tomorrowData.userA
+        if (['M', 'A'].includes(tomorrowShift)) {
+          const dayOfWeek = tomorrow.getDay()
+          const bookBy = dayOfWeek === 1 ? 'Friday 6 PM' : 'By 6 PM'
+          sendCabBookingReminder(tomorrowShift, bookBy)
+        }
+      }
+    }
+
+    // Check on load and every 5 minutes
+    checkNotifications()
+    const interval = setInterval(checkNotifications, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [roasterData])
 
   // Memoize splash greeting with shift awareness
   const splashGreeting = useMemo(() => getSplashGreeting(todayShift), [todayShift])
@@ -269,6 +335,8 @@ function App() {
           onDismiss={() => setShowInstallPrompt(false)}
         />
       )}
+
+      <NotificationSettings />
     </div>
   )
 }
