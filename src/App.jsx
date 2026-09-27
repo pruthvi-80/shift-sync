@@ -76,9 +76,10 @@ function App() {
       }
     }
 
-    // Check on load and every 5 minutes
+    // Check on load and every 10 seconds (TESTING - will be removed)
+    console.log('🧪 TESTING: Notifications check interval set to 10 seconds')
     checkNotifications()
-    const interval = setInterval(checkNotifications, 5 * 60 * 1000)
+    const interval = setInterval(checkNotifications, 10 * 1000)
     return () => clearInterval(interval)
   }, [roasterData])
 
