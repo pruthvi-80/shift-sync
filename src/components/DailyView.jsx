@@ -1558,7 +1558,7 @@ function DailyView({ date, dayData, onPrev, onNext, hasPrev, hasNext, currentInd
           <div className="max-w-md mx-auto w-full space-y-4">
             {/* Main Shift Card with Time-of-Day Theme */}
             <div 
-              className={`relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${theme.bg} border ${isOffDay ? 'border-amber-400/40' : 'border-white/10'}`}
+              className={`daily-shift-card relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br ${theme.bg} border ${isOffDay ? 'border-amber-400/40' : 'border-white/10'}`}
               style={isOffDay ? { boxShadow: `0 0 30px ${theme.colors.primary}30` } : {}}
             >
               

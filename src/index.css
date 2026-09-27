@@ -160,6 +160,54 @@ html[data-theme='lunar'] .surface-1 { background: #1f2937; }
 html[data-theme='lunar'] .surface-2 { background: #334155; }
 html[data-theme='lunar'] .sunflower-gradient { background: linear-gradient(135deg, #e0e7ff, #64748b, #475569); }
 
+html.glass-mode .app-shell {
+  background-color: #10131f !important;
+  background-image:
+    radial-gradient(circle at 8% 4%, rgba(34, 211, 238, 0.3), transparent 34%),
+    radial-gradient(circle at 92% 12%, rgba(251, 191, 36, 0.22), transparent 30%),
+    radial-gradient(circle at 70% 88%, rgba(244, 114, 182, 0.18), transparent 36%) !important;
+}
+
+html.glass-mode .surface-1,
+html.glass-mode .surface-2 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.035)) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.16), 0 14px 32px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme='ocean'].glass-mode .app-shell,
+html[data-theme='aurora'].glass-mode .app-shell {
+  background-image: radial-gradient(circle at 8% 4%, rgba(34, 211, 238, 0.36), transparent 34%), radial-gradient(circle at 92% 12%, rgba(94, 234, 212, 0.24), transparent 30%), radial-gradient(circle at 70% 88%, rgba(56, 189, 248, 0.18), transparent 36%) !important;
+}
+
+html[data-theme='rose'].glass-mode .app-shell,
+html[data-theme='sakura'].glass-mode .app-shell {
+  background-image: radial-gradient(circle at 8% 4%, rgba(251, 113, 133, 0.32), transparent 34%), radial-gradient(circle at 92% 12%, rgba(244, 114, 182, 0.22), transparent 30%), radial-gradient(circle at 70% 88%, rgba(190, 24, 93, 0.2), transparent 36%) !important;
+}
+
+html[data-theme='forest'].glass-mode .app-shell {
+  background-image: radial-gradient(circle at 8% 4%, rgba(94, 234, 212, 0.3), transparent 34%), radial-gradient(circle at 92% 12%, rgba(34, 197, 94, 0.2), transparent 30%), radial-gradient(circle at 70% 88%, rgba(16, 185, 129, 0.18), transparent 36%) !important;
+}
+
+html.glass-mode .daily-shift-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.045)) !important;
+  backdrop-filter: blur(24px) saturate(155%);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  border-color: rgba(255, 255, 255, 0.32) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.24), 0 28px 56px rgba(0, 0, 0, 0.36) !important;
+}
+
+html.glass-mode .daily-shift-card::before {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 38%, rgba(255, 255, 255, 0.06));
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
 html[data-font='editorial'] body { font-family: 'DM Sans', sans-serif; }
 html[data-font='editorial'] .font-display,
 html[data-font='editorial'] .font-outfit { font-family: 'Fraunces', serif; letter-spacing: 0; }
@@ -175,6 +223,23 @@ html[data-font='classic'] .font-outfit { font-family: 'Playfair Display', serif;
 .font-preview-editorial { font-family: 'Fraunces', serif; }
 .font-preview-soft { font-family: 'Manrope', sans-serif; }
 .font-preview-classic { font-family: 'Playfair Display', serif; }
+
+.appearance-panel {
+  background: linear-gradient(145deg, rgba(24, 24, 30, 0.98), rgba(12, 15, 25, 0.98));
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.appearance-choice-selected {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(251, 191, 36, 0.12));
+  border-color: rgba(103, 232, 249, 0.65);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.appearance-glass-toggle {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(167, 139, 250, 0.08));
+  border-color: rgba(103, 232, 249, 0.28);
+}
 
 .reduce-motion *,
 .reduce-motion *::before,

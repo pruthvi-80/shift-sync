@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const THEMES = [
   { id: 'sunflower', name: 'Sunflower', colors: ['#fbbf24', '#f59e0b', '#18181b'] },
@@ -18,12 +19,18 @@ const FONT_PAIRS = [
   { id: 'classic', name: 'Classic', preview: 'Refined and timeless' },
 ]
 
+function getSavedFont() {
+  const savedFont = localStorage.getItem('shift-sync-font')
+  return FONT_PAIRS.some(option => option.id === savedFont) ? savedFont : 'modern'
+}
+
 function ThemeSettings() {
   const [isOpen, setIsOpen] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('shift-sync-theme') || 'sunflower')
   const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('shift-sync-reduced-motion') === 'true')
-  const [font, setFont] = useState(() => localStorage.getItem('shift-sync-font') || 'modern')
+  const [font, setFont] = useState(getSavedFont)
   const [highContrast, setHighContrast] = useState(() => localStorage.getItem('shift-sync-high-contrast') === 'true')
+  const [glassMode, setGlassMode] = useState(() => localStorage.getItem('shift-sync-glass-mode') === 'true')
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -45,6 +52,11 @@ function ThemeSettings() {
     localStorage.setItem('shift-sync-high-contrast', String(highContrast))
   }, [highContrast])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('glass-mode', glassMode)
+    localStorage.setItem('shift-sync-glass-mode', String(glassMode))
+  }, [glassMode])
+
   return (
     <>
       <button
@@ -56,24 +68,25 @@ function ThemeSettings() {
         <span aria-hidden="true">◐</span>
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-3" role="dialog" aria-modal="true" aria-label="Appearance settings">
-          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-zinc-900 p-4 shadow-2xl sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
+          <button onClick={() => setIsOpen(false)} className="fixed right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-zinc-950/90 text-zinc-300 shadow-lg backdrop-blur hover:bg-zinc-800 hover:text-white" aria-label="Close appearance settings">X</button>
+          <div className="appearance-panel max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-xl border p-4 pt-12 shadow-2xl sm:p-5 sm:pt-12">
+            <div className="mb-5">
               <div>
-                <h2 className="font-display text-lg font-bold text-white">Appearance</h2>
-                <p className="mt-1 text-xs text-zinc-400">Saved on this device</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/70">Shift Sync</p>
+                <h2 className="mt-1 font-display text-xl font-bold text-white">Appearance</h2>
+                <p className="mt-1 text-xs text-zinc-300/70">Your choices are saved on this device</p>
               </div>
-              <button onClick={() => setIsOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-white/10 hover:text-white" aria-label="Close appearance settings">X</button>
             </div>
 
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Color palette</p>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Color palette</p>
             <div className="grid grid-cols-2 gap-2">
               {THEMES.map(option => (
                 <button
                   key={option.id}
                   onClick={() => setTheme(option.id)}
-                  className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-left transition ${theme === option.id ? 'border-white/40 bg-white/10' : 'border-white/10 hover:bg-white/5'}`}
+                  className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-left transition ${theme === option.id ? 'appearance-choice-selected' : 'border-white/10 bg-white/[0.025] hover:bg-white/[0.08]'}`}
                 >
                   <span className="text-sm font-medium text-zinc-100">{option.name}</span>
                   <span className="flex gap-1" aria-hidden="true">
@@ -82,6 +95,14 @@ function ThemeSettings() {
                 </button>
               ))}
             </div>
+
+            <label className="appearance-glass-toggle mt-3 flex cursor-pointer items-center justify-between rounded-lg border p-3">
+              <span>
+                <span className="block text-sm font-medium text-zinc-100">Glass mode</span>
+                <span className="mt-0.5 block text-xs text-zinc-400">Translucent surfaces with a soft color backdrop</span>
+              </span>
+              <input type="checkbox" checked={glassMode} onChange={(event) => setGlassMode(event.target.checked)} className="h-4 w-4 accent-cyan-300" />
+            </label>
 
             <label className="mt-5 flex cursor-pointer items-center justify-between rounded-lg border border-white/10 p-3">
               <span>
@@ -98,7 +119,7 @@ function ThemeSettings() {
                   <button
                     key={option.id}
                     onClick={() => setFont(option.id)}
-                    className={`rounded-md border px-3 py-2 text-left transition ${font === option.id ? 'border-amber-300 bg-amber-400/15' : 'border-white/10 hover:bg-white/5'}`}
+                    className={`rounded-md border px-3 py-2 text-left transition ${font === option.id ? 'appearance-choice-selected' : 'border-white/10 bg-white/[0.025] hover:bg-white/[0.08]'}`}
                     aria-label={`${option.name} type style`}
                   >
                     <span className={`block text-sm font-semibold font-preview-${option.id}`}>{option.name}</span>
@@ -117,7 +138,7 @@ function ThemeSettings() {
             </label>
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   )
 }

@@ -116,7 +116,7 @@ function App() {
   const dayData = roasterData && currentDayKey ? roasterData[currentDayKey] : null
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#09090b]">
+    <div className="app-shell h-full w-full flex flex-col bg-[#09090b]">
       <ConnectionStatus />
       {/* Intro Splash Screen */}
       {showIntro && (
