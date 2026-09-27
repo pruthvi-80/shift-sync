@@ -112,6 +112,42 @@ body {
   background: linear-gradient(145deg, #1f1f23 0%, #18181b 100%);
 }
 
+.monthly-today-ring {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.75), 0 0 16px rgba(251, 191, 36, 0.34);
+  z-index: 1;
+}
+
+.monthly-today-ring::after {
+  animation: todayRing 2.4s ease-out infinite;
+  border: 1px solid rgba(251, 191, 36, 0.7);
+  border-radius: inherit;
+  content: '';
+  inset: -4px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.monthly-today-label {
+  color: #fbbf24;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+
+@keyframes todayRing {
+  0% { opacity: 0.7; transform: scale(0.94); }
+  70%, 100% { opacity: 0; transform: scale(1.12); }
+}
+
+.reduce-motion .monthly-today-ring::after {
+  animation: none;
+  opacity: 0;
+}
+
 .intro-splash {
   align-items: center;
   background: #0a1019;

@@ -141,7 +141,7 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
                     isSelected
                       ? 'ring-1 ring-amber-400 ring-offset-1 ring-offset-[#09090b]'
                       : ''
-                  } ${
+                  } ${isCurrentDay ? 'monthly-today-ring' : ''} ${
                     isOffDay
                       ? 'surface-2 border border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/10'
                       : hasData
@@ -152,6 +152,8 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
                   <span className={`font-medium ${isCurrentDay ? 'text-amber-400' : ''}`}>
                     {format(day, 'd')}
                   </span>
+
+                  {isCurrentDay && <span className="monthly-today-label">Today</span>}
                   
                   {hasData && (
                     <div className="mt-0.5">
