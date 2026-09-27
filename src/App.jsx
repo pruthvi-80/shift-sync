@@ -22,6 +22,9 @@ function App() {
   const [todayShift, setTodayShift] = useState(null)
   const [headerCollapsed, setHeaderCollapsed] = useState(false)
   const lastScrollTop = useRef(0)
+  const headerCollapsedRef = useRef(false)
+  const headerScrollLockUntil = useRef(0)
+  const mainScrollRef = useRef(null)
 
   // Fetch today's shift for splash greeting
   useEffect(() => {
@@ -114,18 +117,49 @@ function App() {
     setView('daily')
   }, [])
 
+  const revealHeader = useCallback((lockScroll = false) => {
+    headerCollapsedRef.current = false
+    setHeaderCollapsed(false)
+    if (lockScroll) {
+      headerScrollLockUntil.current = Date.now() + 500
+    }
+  }, [])
+
+  const handleRosterReveal = useCallback(() => {
+    headerScrollLockUntil.current = Date.now() + 900
+    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    window.setTimeout(() => {
+      revealHeader()
+      mainScrollRef.current?.scrollTo({ top: 0 })
+    }, 260)
+  }, [revealHeader])
+
   const handleMainScroll = useCallback((event) => {
     const scrollTop = event.currentTarget.scrollTop
     const scrollDelta = scrollTop - lastScrollTop.current
 
-    if (scrollTop < 16 || scrollDelta < -6) {
-      setHeaderCollapsed(false)
-    } else if (scrollDelta > 6) {
-      setHeaderCollapsed(true)
+    if (Date.now() < headerScrollLockUntil.current) {
+      lastScrollTop.current = scrollTop
+      return
+    }
+
+    const setHeaderVisibility = (collapsed) => {
+      if (headerCollapsedRef.current === collapsed) return
+      headerCollapsedRef.current = collapsed
+      setHeaderCollapsed(collapsed)
+      if (collapsed) {
+        headerScrollLockUntil.current = Date.now() + 320
+      }
+    }
+
+    if (scrollTop < 28 || scrollDelta < -12) {
+      revealHeader()
+    } else if (scrollTop > 72 && scrollDelta > 12) {
+      setHeaderVisibility(true)
     }
 
     lastScrollTop.current = scrollTop
-  }, [])
+  }, [revealHeader])
 
   const currentDay = daysInMonth[currentDayIndex]
   const currentDayKey = currentDay ? format(currentDay, 'yyyy-MM-dd') : null
@@ -148,13 +182,13 @@ function App() {
       />
 
       {headerCollapsed && (
-        <button onClick={() => setHeaderCollapsed(false)} className="header-reveal-pill" aria-label="Show roster header">
+        <button onClick={handleRosterReveal} className="header-reveal-pill" aria-label="Show roster header">
           <span>🌻</span>
           <span>Roster</span>
         </button>
       )}
-      
-      <main className="flex-1 overflow-y-auto relative" onScroll={handleMainScroll}>
+
+      <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative" onScroll={handleMainScroll}>
         {view === 'daily' && (
           loading ? (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center fade-in">
