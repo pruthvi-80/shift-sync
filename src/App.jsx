@@ -9,18 +9,10 @@ import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
 
-function getInitialMonth() {
-  const monthParam = new URLSearchParams(window.location.search).get('month')
-  if (!monthParam || !/^\d{4}-(0[1-9]|1[0-2])$/.test(monthParam)) return getIndianMonth()
-
-  const [year, month] = monthParam.split('-').map(Number)
-  return new Date(year, month - 1, 1)
-}
-
 function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [view, setView] = useState('daily') // 'daily', 'monthly'
-  const [selectedMonth, setSelectedMonth] = useState(getInitialMonth)
+  const [selectedMonth, setSelectedMonth] = useState(getIndianMonth())
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
   const [roasterData, setRoasterData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -106,12 +98,6 @@ function App() {
     setSelectedMonth(newMonth)
     setCurrentDayIndex(0)
   }, [])
-
-  useEffect(() => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('month', format(selectedMonth, 'yyyy-MM'))
-    window.history.replaceState({}, '', url)
-  }, [selectedMonth])
 
   const handlePrevDay = useCallback(() => {
     setCurrentDayIndex(prev => Math.max(0, prev - 1))
