@@ -4,6 +4,7 @@ import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
 import ConnectionStatus from './components/ConnectionStatus'
+import IntroSplash from './components/IntroSplash'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
@@ -118,64 +119,7 @@ function App() {
   return (
     <div className="app-shell h-full w-full flex flex-col bg-[#09090b]">
       <ConnectionStatus />
-      {/* Intro Splash Screen */}
-      {showIntro && (
-        <div 
-          className="fixed inset-0 z-50 bg-[#09090b] flex flex-col items-center justify-center p-8 cursor-pointer animate-fade-in"
-          onClick={() => setShowIntro(false)}
-        >
-          {/* Animated background glow */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-amber-500/20 rounded-full blur-[100px] animate-pulse" />
-            <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-yellow-400/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <div className="absolute top-1/3 right-1/4 w-48 h-48 bg-orange-400/10 rounded-full blur-[60px] animate-pulse" style={{ animationDelay: '1s' }} />
-          </div>
-          
-          {/* Floating emojis */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <span className="absolute text-4xl opacity-20 animate-float" style={{ top: '10%', left: '10%', animationDelay: '0s' }}>🌻</span>
-            <span className="absolute text-3xl opacity-15 animate-float" style={{ top: '20%', right: '15%', animationDelay: '0.5s' }}>😼</span>
-            <span className="absolute text-2xl opacity-15 animate-float" style={{ bottom: '25%', left: '20%', animationDelay: '1s' }}>🐣</span>
-            <span className="absolute text-3xl opacity-15 animate-float" style={{ bottom: '15%', right: '10%', animationDelay: '1.5s' }}>🌻</span>
-            <span className="absolute text-2xl opacity-15 animate-float" style={{ top: '40%', left: '5%', animationDelay: '0.7s' }}>🫠</span>
-            <span className="absolute text-xl opacity-15 animate-float" style={{ bottom: '40%', right: '5%', animationDelay: '1.2s' }}>😼</span>
-            <span className="absolute text-2xl opacity-10 animate-float" style={{ top: '60%', left: '15%', animationDelay: '0.3s' }}>🐣</span>
-            <span className="absolute text-xl opacity-10 animate-float" style={{ top: '15%', right: '30%', animationDelay: '0.9s' }}>💛</span>
-          </div>
-          
-          {/* Main content */}
-          <div className="relative z-10 flex flex-col items-center text-center">
-            {/* Large sunflower with glow */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 w-32 h-32 bg-amber-400/30 rounded-full blur-2xl animate-pulse" />
-              <div className="w-28 h-28 rounded-3xl sunflower-gradient flex items-center justify-center shadow-2xl glow-sunflower animate-bounce-slow">
-                <span className="text-6xl drop-shadow-lg">🌻</span>
-              </div>
-            </div>
-            
-            {/* Title */}
-            <h1 className="text-4xl font-bold font-display text-amber-100 mb-3 animate-slide-up">
-              Snehaa's Shift Roster 🌻
-            </h1>
-            
-            {/* Time-based Greeting */}
-            <div className="mb-4 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-              <p className="text-2xl text-amber-300 font-semibold">{splashGreeting.text}</p>
-              <p className="text-amber-400/70 text-sm mt-1">{splashGreeting.subtitle}</p>
-            </div>
-            
-            {/* Emoji row */}
-            <div className="flex items-center gap-3 mt-4 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-              <span className="text-4xl animate-bounce-slow">🐣</span>
-            </div>
-            
-            {/* Tap hint */}
-            <p className="text-zinc-600 text-xs mt-12 animate-pulse">
-              Tap anywhere to continue
-            </p>
-          </div>
-        </div>
-      )}
+      {showIntro && <IntroSplash greeting={splashGreeting} shift={todayShift} onEnter={() => setShowIntro(false)} />}
       
       <Header 
         view={view} 
