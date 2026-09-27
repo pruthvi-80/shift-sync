@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getGreeting, getIndianDate, getIndianHour } from '../utils/indianTime'
 import { fetchWeather } from '../utils/weather'
 import { getShiftInfo } from '../utils/shiftCodes'
+import ThemeSettings from './ThemeSettings'
 
 // Get shift-aware subtitle
 function getShiftSubtitle(shift) {
@@ -108,6 +109,8 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, onGoToTo
             >
               <span aria-hidden="true">◎</span>
             </button>
+
+            <ThemeSettings />
 
             {/* Month Navigation */}
             <div className="flex items-center rounded-lg surface-2 border border-amber-900/20">
