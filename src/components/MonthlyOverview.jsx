@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns'
 import { getShiftInfo, SHIFT_CODES, WORK_SHIFTS } from '../utils/shiftCodes'
 import { isIndianToday } from '../utils/indianTime'
+import RosterQrShare from './RosterQrShare'
 
 function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIndex }) {
   const daysInMonth = useMemo(() => eachDayOfInterval({
@@ -53,10 +54,13 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
   return (
     <div className="monthly-overview h-full overflow-y-auto px-4 py-4 pb-8">
       <div className="max-w-md mx-auto">
-        <button onClick={() => window.print()} className="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20">
-          <span aria-hidden="true">🖨️</span>
-          <span>Print or Save as PDF</span>
-        </button>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <button onClick={() => window.print()} className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/20">
+            <span aria-hidden="true">🖨️</span>
+            <span>Print / PDF</span>
+          </button>
+          <RosterQrShare selectedMonth={selectedMonth} />
+        </div>
 
         {/* Stats Summary */}
         <div className="mb-5 p-4 rounded-2xl surface-1 border border-amber-900/30">
