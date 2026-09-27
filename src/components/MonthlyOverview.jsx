@@ -205,24 +205,24 @@ function MonthlyOverview({ selectedMonth, roasterData, onDaySelect, currentDayIn
           <div><strong>{stats.offDays}</strong><span>Off days</span></div>
           <div><strong>{stats.totalDays}</strong><span>Scheduled</span></div>
         </div>
-        <table>
-          <thead>
-            <tr>{weekDays.map(day => <th key={day}>{day}</th>)}</tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: calendarCells.length / 7 }, (_, weekIndex) => (
-              <tr key={weekIndex}>
-                {calendarCells.slice(weekIndex * 7, weekIndex * 7 + 7).map((day, dayIndex) => {
-                  if (!day) return <td key={dayIndex} />
-                  const shift = roasterData[format(day, 'yyyy-MM-dd')]?.userA
-                  const info = shift ? getShiftInfo(shift) : null
-                  return <td key={format(day, 'yyyy-MM-dd')}><strong>{format(day, 'd')}</strong>{info && <span className={`print-shift print-shift-${shift}`}>{info.emoji} {info.label}</span>}</td>
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="print-calendar-label">MONTH AT A GLANCE</div>
+        <div className="print-calendar-grid">
+          {weekDays.map(day => <div key={day} className="print-calendar-weekday">{day}</div>)}
+          {calendarCells.map((day, index) => {
+            if (!day) return <div key={`empty-${index}`} className="print-day print-day-empty" />
+
+            const shift = roasterData[format(day, 'yyyy-MM-dd')]?.userA
+            const info = shift ? getShiftInfo(shift) : null
+            return (
+              <div key={format(day, 'yyyy-MM-dd')} className={shift ? `print-day print-day-${shift}` : 'print-day'}>
+                <strong>{format(day, 'd')}</strong>
+                {info && <span className={`print-shift print-shift-${shift}`}>{info.emoji} {info.label}</span>}
+              </div>
+            )
+          })}
+        </div>
         <div className="print-legend">
+          <span className="print-legend-title">Shift key</span>
           <span><b className="print-dot print-dot-M" />Morning</span>
           <span><b className="print-dot print-dot-A" />Afternoon</span>
           <span><b className="print-dot print-dot-N" />Night</span>
