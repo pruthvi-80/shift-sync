@@ -267,6 +267,31 @@ export function sendTestNotification() {
   }
 }
 
+// Temporary production diagnostic: sends a uniquely tagged notification each time.
+export function sendNotificationHeartbeat() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') {
+    return
+  }
+
+  const sentAt = new Date().toLocaleTimeString()
+  const notificationOptions = {
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    body: `Heartbeat sent at ${sentAt}`,
+    tag: `notification-heartbeat-${Date.now()}`,
+    requireInteraction: false,
+  }
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready
+      .then(registration => registration.showNotification('Shift Sync Notification Test', notificationOptions))
+      .catch(() => new Notification('Shift Sync Notification Test', notificationOptions))
+    return
+  }
+
+  new Notification('Shift Sync Notification Test', notificationOptions)
+}
+
 function triggerDirectNotification() {
   const notification = new Notification('Shift Sync Test ✅', {
     icon: '/favicon.svg',

@@ -7,7 +7,7 @@ import NotificationSettings from './components/NotificationSettings'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
-import { sendShiftNotification, sendCabBookingReminder, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
+import { sendShiftNotification, sendCabBookingReminder, sendNotificationHeartbeat, getNotificationPreferences, shouldSendNotification, getCabRemindersForToday } from './utils/notifications'
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
@@ -76,10 +76,15 @@ function App() {
       }
     }
 
-    // Check on load and every 10 seconds (TESTING - will be removed)
+    // Temporary production diagnostic: sends a notification every 10 seconds.
     console.log('🧪 TESTING: Notifications check interval set to 10 seconds')
-    checkNotifications()
-    const interval = setInterval(checkNotifications, 10 * 1000)
+    const runNotificationTest = () => {
+      checkNotifications()
+      sendNotificationHeartbeat()
+    }
+
+    runNotificationTest()
+    const interval = setInterval(runNotificationTest, 10 * 1000)
     return () => clearInterval(interval)
   }, [roasterData])
 
