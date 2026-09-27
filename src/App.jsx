@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
@@ -20,6 +20,8 @@ function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [todayShift, setTodayShift] = useState(null)
+  const [headerCollapsed, setHeaderCollapsed] = useState(false)
+  const lastScrollTop = useRef(0)
 
   // Fetch today's shift for splash greeting
   useEffect(() => {
@@ -112,6 +114,19 @@ function App() {
     setView('daily')
   }, [])
 
+  const handleMainScroll = useCallback((event) => {
+    const scrollTop = event.currentTarget.scrollTop
+    const scrollDelta = scrollTop - lastScrollTop.current
+
+    if (scrollTop < 16 || scrollDelta < -6) {
+      setHeaderCollapsed(false)
+    } else if (scrollDelta > 6) {
+      setHeaderCollapsed(true)
+    }
+
+    lastScrollTop.current = scrollTop
+  }, [])
+
   const currentDay = daysInMonth[currentDayIndex]
   const currentDayKey = currentDay ? format(currentDay, 'yyyy-MM-dd') : null
   const dayData = roasterData && currentDayKey ? roasterData[currentDayKey] : null
@@ -129,9 +144,17 @@ function App() {
         onMonthChange={handleMonthChange}
         loading={loading}
         todayShift={todayShift}
+        isCollapsed={headerCollapsed}
       />
+
+      {headerCollapsed && (
+        <button onClick={() => setHeaderCollapsed(false)} className="header-reveal-pill" aria-label="Show roster header">
+          <span>🌻</span>
+          <span>Roster</span>
+        </button>
+      )}
       
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 overflow-y-auto relative" onScroll={handleMainScroll}>
         {view === 'daily' && (
           loading ? (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center fade-in">

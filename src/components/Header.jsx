@@ -32,7 +32,7 @@ function getShiftSubtitle(shift) {
   return { text: `${timeWord}: ${info.label}`, icon: info.emoji }
 }
 
-function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift }) {
+function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift, isCollapsed }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const [currentTime, setCurrentTime] = useState(getIndianDate())
   const [weather, setWeather] = useState(null)
@@ -76,9 +76,9 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
   }
 
   return (
-    <header className="surface-1 border-b border-amber-900/30">
+    <header className={`app-header surface-1 border-b border-amber-900/30 ${isCollapsed ? 'app-header-hidden' : ''}`}>
       {/* Main Header Row */}
-      <div className="px-4 py-3">
+      <div className="app-header-main px-4 py-3">
         <div className="header-main-row flex items-center justify-between max-w-lg mx-auto">
           {/* Left: Logo + Greeting */}
           <div 
@@ -151,7 +151,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
       
       {/* Info Strip - Shift + Weather (always visible) */}
       <div 
-        className="px-4 py-2 bg-amber-950/20 cursor-pointer"
+        className="app-header-info px-4 py-2 bg-amber-950/20 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="header-info-content flex items-center justify-center gap-4 max-w-lg mx-auto text-xs">
