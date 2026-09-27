@@ -3,6 +3,7 @@ import DailyView from './components/DailyView'
 import MonthlyOverview from './components/MonthlyOverview'
 import Header from './components/Header'
 import InstallPrompt from './components/InstallPrompt'
+import ConnectionStatus from './components/ConnectionStatus'
 import { fetchRoasterForMonth, fetchTodayShift } from './utils/storage'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns'
 import { getIndianDate, isIndianToday, getIndianMonth, getSplashGreeting } from './utils/indianTime'
@@ -97,6 +98,12 @@ function App() {
     setCurrentDayIndex(0)
   }, [])
 
+  const handleGoToToday = useCallback(() => {
+    const today = getIndianDate()
+    setSelectedMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+    setCurrentDayIndex(today.getDate() - 1)
+  }, [])
+
   const handlePrevDay = useCallback(() => {
     setCurrentDayIndex(prev => Math.max(0, prev - 1))
   }, [])
@@ -116,6 +123,7 @@ function App() {
 
   return (
     <div className="h-full w-full flex flex-col bg-[#09090b]">
+      <ConnectionStatus />
       {/* Intro Splash Screen */}
       {showIntro && (
         <div 
@@ -181,6 +189,7 @@ function App() {
         hasData={!!roasterData}
         selectedMonth={selectedMonth}
         onMonthChange={handleMonthChange}
+        onGoToToday={handleGoToToday}
         loading={loading}
         todayShift={todayShift}
       />
