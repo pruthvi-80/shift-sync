@@ -52,7 +52,11 @@ function App() {
   const mainScrollRef = useRef(null)
   const rosterUserDataRef = useRef(rosterUserData)
   const rosterSyncQueue = useRef(Promise.resolve())
+  const rosterSaveTimer = useRef(null)
+  const rosterSyncRevision = useRef(0)
   rosterUserDataRef.current = rosterUserData
+
+  useEffect(() => () => window.clearTimeout(rosterSaveTimer.current), [])
 
   useEffect(() => {
     if (!supabase) {
@@ -122,7 +126,7 @@ function App() {
     return () => { active = false }
   }, [session])
 
-  const updateRosterUserData = async (field, value) => {
+  const updateRosterUserData = (field, value) => {
     const nextData = { ...rosterUserDataRef.current, [field]: value }
     rosterUserDataRef.current = nextData
     setRosterUserData(nextData)
@@ -133,16 +137,22 @@ function App() {
       return
     }
 
-    setRosterSyncStatus('Saving roster notes…')
-    const syncTask = rosterSyncQueue.current.then(() => supabase.from('shift_sync_user_data').upsert({
-      user_id: session.user.id,
-      moods: nextData.moods,
-      notes: nextData.notes,
-      updated_at: new Date().toISOString()
-    }))
-    rosterSyncQueue.current = syncTask.catch(() => undefined)
-    const { error } = await syncTask
-    setRosterSyncStatus(error ? `Saved locally; cloud sync failed: ${error.message}` : 'Roster notes and moods synced.')
+    const revision = ++rosterSyncRevision.current
+    setRosterSyncStatus('Saved on this device · syncing…')
+    window.clearTimeout(rosterSaveTimer.current)
+    rosterSaveTimer.current = window.setTimeout(() => {
+      const syncTask = rosterSyncQueue.current.then(() => supabase.from('shift_sync_user_data').upsert({
+        user_id: session.user.id,
+        moods: rosterUserDataRef.current.moods,
+        notes: rosterUserDataRef.current.notes,
+        updated_at: new Date().toISOString()
+      }))
+      rosterSyncQueue.current = syncTask.catch(() => undefined)
+      syncTask.then(({ error }) => {
+        if (revision !== rosterSyncRevision.current) return
+        setRosterSyncStatus(error ? `Saved locally; cloud sync failed: ${error.message}` : 'Roster notes and moods synced.')
+      })
+    }, 400)
   }
 
   // Fetch today's shift for splash greeting
@@ -303,7 +313,7 @@ function App() {
         rosterSyncStatus={rosterSyncStatus}
       />
 
-      <nav className="app-section-tabs" aria-label="App sections">
+      <nav className={`app-section-tabs${headerCollapsed ? ' has-reveal-pill' : ''}`} aria-label="App sections">
         <button
           type="button"
           className={view !== 'cycle' ? 'app-section-tab active' : 'app-section-tab'}
@@ -322,14 +332,13 @@ function App() {
           <span aria-hidden="true">🌸</span>
           <span>Cycle Tracker</span>
         </button>
+        {headerCollapsed && (
+          <button onClick={handleRosterReveal} className="header-reveal-pill" aria-label="Show roster header">
+            <span>🌻</span>
+            <span>Roster</span>
+          </button>
+        )}
       </nav>
-
-      {headerCollapsed && (
-        <button onClick={handleRosterReveal} className="header-reveal-pill" aria-label="Show roster header">
-          <span>🌻</span>
-          <span>Roster</span>
-        </button>
-      )}
 
       <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative" onScroll={handleMainScroll}>
         {view === 'daily' && (

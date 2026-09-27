@@ -1,5 +1,5 @@
 import { format, addMonths, subMonths } from 'date-fns'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { getGreeting, getIndianDate, getIndianHour } from '../utils/indianTime'
 import { fetchWeather } from '../utils/weather'
@@ -44,7 +44,18 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const [authBusy, setAuthBusy] = useState(false)
+  const [authClosing, setAuthClosing] = useState(false)
+  const authCloseTimer = useRef(null)
   const shiftSubtitle = getShiftSubtitle(todayShift)
+
+  const closeAuthPanel = () => {
+    setAuthClosing(true)
+    window.clearTimeout(authCloseTimer.current)
+    authCloseTimer.current = window.setTimeout(() => {
+      setShowAuthPanel(false)
+      setAuthClosing(false)
+    }, 180)
+  }
   
   // Update time every second
   useEffect(() => {
@@ -57,10 +68,13 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
   useEffect(() => {
     if (!showAuthPanel) return undefined
     const handleEscape = event => {
-      if (event.key === 'Escape') setShowAuthPanel(false)
+      if (event.key === 'Escape') closeAuthPanel()
     }
     window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+      window.clearTimeout(authCloseTimer.current)
+    }
   }, [showAuthPanel])
 
   // Update greeting every minute
@@ -103,7 +117,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
       return
     }
     setPassword('')
-    setShowAuthPanel(false)
+    closeAuthPanel()
   }
 
   const handleSignOut = async () => {
@@ -112,7 +126,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
     const { error } = await supabase.auth.signOut()
     setAuthBusy(false)
     setAuthError(error?.message || '')
-    if (!error) setShowAuthPanel(false)
+    if (!error) closeAuthPanel()
   }
 
   return (
@@ -190,6 +204,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
               className="roster-auth-trigger"
               onClick={() => {
                 setAuthError('')
+                setAuthClosing(false)
                 setShowAuthPanel(true)
               }}
               disabled={!authReady}
@@ -260,11 +275,11 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
       )}
 
       {showAuthPanel && createPortal(
-        <div className="roster-auth-backdrop" onMouseDown={event => {
-          if (event.target === event.currentTarget) setShowAuthPanel(false)
+        <div className={`roster-auth-backdrop${authClosing ? ' is-closing' : ''}`} onMouseDown={event => {
+          if (event.target === event.currentTarget) closeAuthPanel()
         }}>
-          <section className="roster-auth-panel" role="dialog" aria-modal="true" aria-labelledby="roster-auth-title">
-            <button className="roster-auth-close" type="button" onClick={() => setShowAuthPanel(false)} aria-label="Close login panel">×</button>
+          <section className={`roster-auth-panel${authClosing ? ' is-closing' : ''}`} role="dialog" aria-modal="true" aria-labelledby="roster-auth-title">
+            <button className="roster-auth-close" type="button" onClick={closeAuthPanel} aria-label="Close login panel">×</button>
             <div className="roster-auth-mark" aria-hidden="true">🌻</div>
             <p className="roster-auth-eyebrow">SHIFT SYNC</p>
             {session ? (
@@ -272,7 +287,8 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
                 <h2 id="roster-auth-title">Snehaa 🌻</h2>
                 <p className="roster-auth-copy">This shared account syncs cycle logs, roster moods, and day notes across devices.</p>
                 <p className="roster-auth-status" role="status">{rosterSyncStatus || 'Cloud account is connected.'}</p>
-                <button className="roster-auth-submit" type="button" onClick={handleSignOut} disabled={authBusy}>
+                <button className={`roster-auth-submit${authBusy ? ' is-busy' : ''}`} type="button" onClick={handleSignOut} disabled={authBusy}>
+                  <span className="roster-auth-button-icon" aria-hidden="true">{authBusy ? '◌' : '↗'}</span>
                   {authBusy ? 'Signing out…' : 'Sign out'}
                 </button>
               </>
@@ -293,7 +309,8 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
                       <input type="password" autoComplete="current-password" minLength="6" required value={password} onChange={event => setPassword(event.target.value)} />
                     </label>
                     {authError && <p className="roster-auth-error" role="alert">{authError}</p>}
-                    <button className="roster-auth-submit" type="submit" disabled={authBusy}>
+                    <button className={`roster-auth-submit${authBusy ? ' is-busy' : ''}`} type="submit" disabled={authBusy}>
+                      {authBusy && <span className="roster-auth-button-icon" aria-hidden="true">◌</span>}
                       {authBusy ? 'Signing in…' : 'Sign in'}
                     </button>
                   </form>

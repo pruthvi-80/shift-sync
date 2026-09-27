@@ -44,6 +44,7 @@ function dateFromKey(dateKey) {
 
 function CycleTracker({ session }) {
   const [trackerData, setTrackerData] = useState(loadTrackerData)
+  const [cycleLengthDraft, setCycleLengthDraft] = useState(() => String(trackerData.cycleLength))
   const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()))
   const [startDate, setStartDate] = useState(format(startOfDay(new Date()), 'yyyy-MM-dd'))
   const [duration, setDuration] = useState(5)
@@ -137,6 +138,10 @@ function CycleTracker({ session }) {
     if (intervals.length === 0) return trackerData.cycleLength
     return Math.round(intervals.reduce((total, days) => total + days, 0) / intervals.length)
   }, [periods, trackerData.cycleLength])
+
+  useEffect(() => {
+    setCycleLengthDraft(String(cycleLength))
+  }, [cycleLength])
 
   const today = startOfDay(new Date())
   const expectedStart = useMemo(() => {
@@ -236,18 +241,22 @@ function CycleTracker({ session }) {
     }
   }
 
-  const handleCycleLengthChange = async event => {
-    const value = Number(event.target.value)
-    if (value < 21 || value > 45) return
+  const handleCycleLengthChange = async () => {
+    const value = Number(cycleLengthDraft)
+    if (value < 21 || value > 45) {
+      setCycleLengthDraft(String(cycleLength))
+      return
+    }
 
     setTrackerData(current => ({ ...current, cycleLength: value }))
-    if (session && supabase) {
-      const { error } = await supabase.from('cycle_settings').upsert({
-        user_id: session.user.id,
-        cycle_length: value
-      })
-      setSyncMessage(error ? `Cycle length saved locally; cloud sync failed: ${error.message}` : 'Cycle length synced to your account.')
-    }
+    if (!session || !supabase) return
+
+    setSyncMessage('Cycle length saved on this device · syncing…')
+    const { error } = await supabase.from('cycle_settings').upsert({
+      user_id: session.user.id,
+      cycle_length: value
+    })
+    setSyncMessage(error ? `Cycle length saved locally; cloud sync failed: ${error.message}` : 'Cycle length synced to your account.')
   }
 
   return (
@@ -267,9 +276,13 @@ function CycleTracker({ session }) {
                 type="number"
                 min="21"
                 max="45"
-                value={cycleLength}
+                value={cycleLengthDraft}
                 disabled={periods.length > 1}
-                onChange={handleCycleLengthChange}
+                onChange={event => setCycleLengthDraft(event.target.value)}
+                onBlur={handleCycleLengthChange}
+                onKeyDown={event => {
+                  if (event.key === 'Enter') event.currentTarget.blur()
+                }}
                 aria-describedby="cycle-length-help"
               />
               <span>days</span>

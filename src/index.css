@@ -151,12 +151,15 @@ body {
   gap: 0.35rem;
   letter-spacing: 0.08em;
   padding: 0.4rem 0.7rem;
-  position: fixed;
-  right: 1rem;
+  position: absolute;
+  right: 0.65rem;
   text-transform: uppercase;
-  top: 0.8rem;
+  top: 50%;
   z-index: 40;
+  transform: translateY(-50%);
 }
+
+.app-section-tabs.has-reveal-pill { padding-right: 7.1rem; position: relative; }
 
 .roster-auth-trigger {
   align-items: center;
@@ -181,8 +184,10 @@ body {
 .roster-auth-trigger:focus-visible,
 .roster-auth-panel button:focus-visible,
 .roster-auth-panel input:focus-visible { outline: 2px solid var(--palette-accent); outline-offset: 2px; }
-.roster-auth-backdrop { align-items: center; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; inset: 0; justify-content: center; padding: 1rem; position: fixed; z-index: 90; }
-.roster-auth-panel { background: linear-gradient(145deg, color-mix(in srgb, var(--palette-accent-strong) 14%, #19191e), #111114 70%); border: 1px solid color-mix(in srgb, var(--palette-accent) 34%, rgba(255, 255, 255, 0.12)); border-radius: 1rem; box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58), inset 0 1px rgba(255, 255, 255, 0.08); color: #fafafa; max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 1.5rem; position: relative; width: min(100%, 25rem); }
+.roster-auth-backdrop { align-items: center; animation: authBackdropIn 180ms ease-out both; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: flex; inset: 0; justify-content: center; padding: 1rem; position: fixed; z-index: 90; }
+.roster-auth-panel { animation: authPanelIn 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; background: linear-gradient(145deg, color-mix(in srgb, var(--palette-accent-strong) 14%, #19191e), #111114 70%); border: 1px solid color-mix(in srgb, var(--palette-accent) 34%, rgba(255, 255, 255, 0.12)); border-radius: 1rem; box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58), inset 0 1px rgba(255, 255, 255, 0.08); color: #fafafa; max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 1.5rem; position: relative; transform-origin: center; width: min(100%, 25rem); }
+.roster-auth-backdrop.is-closing { animation: authBackdropOut 180ms ease-in both; }
+.roster-auth-panel.is-closing { animation: authPanelOut 180ms ease-in both; }
 .roster-auth-close { align-items: center; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; color: #d4d4d8; display: flex; font-size: 1.3rem; height: 2rem; justify-content: center; line-height: 1; position: absolute; right: 0.85rem; top: 0.85rem; width: 2rem; }
 .roster-auth-mark { align-items: center; background: linear-gradient(135deg, var(--palette-accent), var(--palette-accent-strong)); border: 1px solid rgba(255, 255, 255, 0.23); border-radius: 0.85rem; box-shadow: 0 10px 24px var(--palette-accent-muted); display: flex; font-size: 1.6rem; height: 3rem; justify-content: center; width: 3rem; }
 .roster-auth-eyebrow { color: var(--palette-accent); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; margin: 1rem 0 0.35rem; }
@@ -194,7 +199,10 @@ body {
 .roster-auth-form input { background: rgba(0, 0, 0, 0.32); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 0.55rem; color: #fafafa; font: inherit; font-size: 0.8rem; height: 2.75rem; padding: 0 0.75rem; width: 100%; }
 .roster-auth-form input:focus { border-color: var(--palette-accent); }
 .roster-auth-submit { background: linear-gradient(135deg, var(--palette-accent), var(--palette-accent-strong)); border: 1px solid color-mix(in srgb, var(--palette-accent) 65%, white); border-radius: 0.6rem; color: #171717; font: inherit; font-size: 0.76rem; font-weight: 800; min-height: 2.7rem; padding: 0.5rem 0.8rem; width: 100%; }
+.roster-auth-submit { align-items: center; display: flex; gap: 0.45rem; justify-content: center; }
 .roster-auth-submit:disabled { cursor: wait; opacity: 0.7; }
+.roster-auth-button-icon { display: inline-flex; font-size: 0.9rem; line-height: 1; }
+.roster-auth-submit.is-busy .roster-auth-button-icon { animation: authSpinner 800ms linear infinite; }
 .roster-auth-error { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(251, 113, 133, 0.24); border-radius: 0.5rem; color: #fda4af; font-size: 0.69rem; line-height: 1.4; margin: 0; padding: 0.55rem 0.65rem; }
 .roster-auth-footnote,
 .roster-auth-status { color: #a1a1aa; font-size: 0.65rem; line-height: 1.5; margin: 0.8rem 0 0; }
@@ -203,9 +211,15 @@ body {
 html.glass-mode .roster-auth-panel { background: linear-gradient(145deg, rgba(255, 255, 255, 0.17), rgba(17, 17, 20, 0.88)); backdrop-filter: blur(24px) saturate(155%); -webkit-backdrop-filter: blur(24px) saturate(155%); }
 html.glass-mode .roster-auth-form input { background: rgba(0, 0, 0, 0.22); }
 
+@keyframes authBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes authBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes authPanelIn { from { opacity: 0; transform: translateY(0.8rem) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes authPanelOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(0.4rem) scale(0.98); } }
+@keyframes authSpinner { to { transform: rotate(360deg); } }
+
 @keyframes headerPillIn {
-  from { opacity: 0; transform: translateY(-10px) scale(0.86); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(calc(-50% - 10px)) scale(0.86); }
+  to { opacity: 1; transform: translateY(-50%) scale(1); }
 }
 
 :root {
@@ -1190,9 +1204,10 @@ html[data-font='classic'] .font-outfit { font-family: 'Playfair Display', serif;
   align-items: center;
   background: #111114;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  display: flex;
+  display: grid;
   flex: 0 0 auto;
   gap: 0.35rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-content: center;
   padding: 0.55rem 1rem;
 }
@@ -1210,8 +1225,10 @@ html[data-font='classic'] .font-outfit { font-family: 'Playfair Display', serif;
   gap: 0.45rem;
   justify-content: center;
   min-height: 2.5rem;
+  min-width: 0;
   padding: 0.45rem 0.9rem;
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  white-space: nowrap;
 }
 
 .app-section-tab:hover { color: #fafafa; }
@@ -1364,8 +1381,8 @@ html[data-font='classic'] .font-outfit { font-family: 'Playfair Display', serif;
 .cycle-disclaimer { border-top: 1px solid var(--cycle-border); color: #71717a; font-size: 0.61rem; line-height: 1.5; margin: 0.85rem 0 0; padding-top: 0.7rem; }
 
 @media (max-width: 640px) {
-  .app-section-tabs { justify-content: stretch; padding: 0.45rem 0.65rem; }
-  .app-section-tab { flex: 1; font-size: 0.72rem; padding: 0.4rem 0.5rem; }
+  .app-section-tabs { padding: 0.45rem 0.65rem; }
+  .app-section-tab { font-size: 0.72rem; padding: 0.4rem 0.5rem; }
   .cycle-tracker { padding: 1.15rem 0.7rem 2rem; }
   .cycle-heading { align-items: stretch; flex-direction: column; gap: 0.85rem; }
   .cycle-heading h2 { font-size: 1.75rem; }
@@ -1387,4 +1404,7 @@ html[data-font='classic'] .font-outfit { font-family: 'Playfair Display', serif;
   .app-section-tab,
   .cycle-day,
   .cycle-save-button { transition: none; }
+  .roster-auth-backdrop,
+  .roster-auth-panel,
+  .roster-auth-submit.is-busy .roster-auth-button-icon { animation: none !important; }
 }
