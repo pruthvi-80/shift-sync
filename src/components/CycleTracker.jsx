@@ -122,8 +122,66 @@ function CycleTracker({ session, authReady, onLogin }) {
       setSyncMessage(cloudPeriods.length > 0 ? 'Your records are synced to this account.' : 'Cloud sync is ready for this account.')
     }
 
-    loadCloudData()
-    return () => { active = false }
+    let initialLoadStarted = false
+    const startInitialLoad = () => {
+      if (initialLoadStarted) return
+      initialLoadStarted = true
+      loadCloudData()
+    }
+    const channel = supabase
+      .channel(`shift-sync-cycle-${session.user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'period_logs',
+        filter: `user_id=eq.${session.user.id}`
+      }, payload => {
+        if (payload.eventType === 'DELETE') {
+          const startDate = payload.old?.start_date
+          if (!startDate) return
+          setTrackerData(current => ({
+            ...current,
+            periods: current.periods.filter(period => period.startDate !== startDate)
+          }))
+        } else if (payload.new?.start_date) {
+          const period = {
+            startDate: payload.new.start_date,
+            duration: payload.new.duration,
+            symptoms: payload.new.symptoms || [],
+            notes: payload.new.notes || ''
+          }
+          setTrackerData(current => ({
+            ...current,
+            periods: [...current.periods.filter(item => item.startDate !== period.startDate), period]
+          }))
+        }
+        setSyncMessage('Cycle records synced.')
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'cycle_settings',
+        filter: `user_id=eq.${session.user.id}`
+      }, payload => {
+        const cycleLength = payload.new?.cycle_length
+        if (!Number.isInteger(cycleLength)) return
+        setTrackerData(current => ({ ...current, cycleLength }))
+        setCycleLengthDraft(String(cycleLength))
+        setSyncMessage('Cycle settings synced.')
+      })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          startInitialLoad()
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setSyncMessage('Live cycle sync disconnected. Changes remain saved locally.')
+        }
+      })
+
+    return () => {
+      active = false
+      supabase.removeChannel(channel)
+    }
   }, [session])
 
   const periods = useMemo(() => [...trackerData.periods]

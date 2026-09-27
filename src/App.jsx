@@ -123,8 +123,46 @@ function App() {
       setRosterSyncStatus(data ? 'Roster notes and moods synced.' : 'Roster notes and moods are ready to sync.')
     }
 
-    loadSharedRosterData()
-    return () => { active = false }
+    let initialLoadStarted = false
+    const startInitialLoad = () => {
+      if (initialLoadStarted) return
+      initialLoadStarted = true
+      loadSharedRosterData()
+    }
+    const channel = supabase
+      .channel(`shift-sync-roster-${session.user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'shift_sync_user_data',
+        filter: `user_id=eq.${session.user.id}`
+      }, payload => {
+        if (payload.eventType === 'DELETE') return
+        const row = payload.new
+        if (!row) return
+
+        const nextData = {
+          moods: row.moods || {},
+          notes: row.notes || {}
+        }
+        rosterUserDataRef.current = nextData
+        setRosterUserData(nextData)
+        saveRosterUserData(nextData)
+        setRosterSyncStatus('Roster notes and moods synced.')
+      })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          startInitialLoad()
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setRosterSyncStatus('Live roster sync disconnected. Changes remain saved locally.')
+        }
+      })
+
+    return () => {
+      active = false
+      supabase.removeChannel(channel)
+    }
   }, [session])
 
   const updateRosterUserData = (field, value) => {

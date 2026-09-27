@@ -18,3 +18,36 @@ with check (auth.uid() = user_id);
 
 grant select, insert, update, delete
 on public.shift_sync_user_data to authenticated;
+
+alter table public.period_logs replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'shift_sync_user_data'
+  ) then
+    alter publication supabase_realtime add table public.shift_sync_user_data;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'period_logs'
+  ) then
+    alter publication supabase_realtime add table public.period_logs;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'cycle_settings'
+  ) then
+    alter publication supabase_realtime add table public.cycle_settings;
+  end if;
+end;
+$$;
