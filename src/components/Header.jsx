@@ -32,7 +32,7 @@ function getShiftSubtitle(shift) {
   return { text: `${timeWord}: ${info.label}`, icon: info.emoji }
 }
 
-function Header({ view, setView, hasData, selectedMonth, onMonthChange, onGoToToday, loading, todayShift }) {
+function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading, todayShift }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const [currentTime, setCurrentTime] = useState(getIndianDate())
   const [weather, setWeather] = useState(null)
@@ -100,16 +100,6 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, onGoToTo
           
           {/* Right: Month Nav + View Toggle */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={onGoToToday}
-              disabled={loading}
-              className="flex h-8 w-8 items-center justify-center rounded-lg surface-2 text-amber-300 transition hover:bg-amber-500/15 hover:text-amber-200 disabled:opacity-50"
-              title="Go to today"
-              aria-label="Go to today"
-            >
-              <span aria-hidden="true">◎</span>
-            </button>
-
             <ThemeSettings />
 
             {/* Month Navigation */}

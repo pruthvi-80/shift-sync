@@ -98,12 +98,6 @@ function App() {
     setCurrentDayIndex(0)
   }, [])
 
-  const handleGoToToday = useCallback(() => {
-    const today = getIndianDate()
-    setSelectedMonth(new Date(today.getFullYear(), today.getMonth(), 1))
-    setCurrentDayIndex(today.getDate() - 1)
-  }, [])
-
   const handlePrevDay = useCallback(() => {
     setCurrentDayIndex(prev => Math.max(0, prev - 1))
   }, [])
@@ -189,7 +183,6 @@ function App() {
         hasData={!!roasterData}
         selectedMonth={selectedMonth}
         onMonthChange={handleMonthChange}
-        onGoToToday={handleGoToToday}
         loading={loading}
         todayShift={todayShift}
       />
