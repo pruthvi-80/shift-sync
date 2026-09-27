@@ -8,6 +8,7 @@ function NotificationSettings() {
   const [permissionGranted, setPermissionGranted] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [testMessage, setTestMessage] = useState('')
+  const [showButton, setShowButton] = useState(true)
 
   // Check permission status on mount
   useEffect(() => {
@@ -50,12 +51,22 @@ function NotificationSettings() {
     }, 500)
   }
 
+  // Hide button after closing
+  const handleCloseSettings = () => {
+    setShowSettings(false)
+  }
+
+  // If button is hidden, return null
+  if (!showButton) {
+    return null
+  }
+
   // Button state - show enabled icon if permission granted, bell if not
   if (!showSettings) {
     return (
       <button
         onClick={() => setShowSettings(true)}
-        className={`fixed bottom-6 right-6 rounded-full p-3 shadow-lg transition ${
+        className={`fixed bottom-6 right-20 rounded-full p-3 shadow-lg transition ${
           permissionGranted || (Notification?.permission === 'granted')
             ? 'bg-green-500 hover:bg-green-600'
             : 'bg-yellow-400 hover:bg-yellow-500'
@@ -66,7 +77,7 @@ function NotificationSettings() {
             : 'Enable Notifications'
         }
       >
-        {permissionGranted || (Notification?.permission === 'granted') ? '✅' : '🔔'}
+        {permissionGranted || (Notification?.permission === 'granted') ? '🔔' : '🔕'}
       </button>
     )
   }
@@ -77,7 +88,7 @@ function NotificationSettings() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Notifications</h2>
           <button
-            onClick={() => setShowSettings(false)}
+            onClick={handleCloseSettings}
             className="text-gray-400 hover:text-white text-2xl"
           >
             ✕
@@ -88,7 +99,7 @@ function NotificationSettings() {
         {permissionGranted || (Notification?.permission === 'granted') ? (
           <>
             <div className="mb-6 p-4 bg-green-900/30 border border-green-600 rounded">
-              <p className="text-green-400 text-sm font-semibold">✅ Notifications Enabled</p>
+              <p className="text-green-400 text-sm font-semibold">🔔 Notifications Enabled</p>
               <p className="text-green-300/70 text-xs mt-2">
                 You'll receive shift reminders and cab booking alerts
               </p>
@@ -112,7 +123,7 @@ function NotificationSettings() {
         ) : (
           <>
             <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-600 rounded">
-              <p className="text-yellow-400 text-sm font-semibold">📬 Notifications Disabled</p>
+              <p className="text-yellow-400 text-sm font-semibold">🔕 Notifications Disabled</p>
               <p className="text-yellow-300/70 text-xs mt-2">
                 Enable notifications to receive shift reminders and cab booking alerts
               </p>
@@ -120,16 +131,24 @@ function NotificationSettings() {
 
             <button
               onClick={handleEnableNotifications}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg text-sm font-medium transition"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg text-sm font-medium transition mb-3"
             >
               Enable Notifications
             </button>
           </>
         )}
 
+        {/* Hide Button Toggle */}
         <button
-          onClick={() => setShowSettings(false)}
-          className="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm transition"
+          onClick={() => setShowButton(false)}
+          className="w-full text-gray-400 hover:text-gray-300 py-2 px-3 rounded text-xs transition"
+        >
+          Hide Button
+        </button>
+
+        <button
+          onClick={handleCloseSettings}
+          className="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm transition"
         >
           Close
         </button>
