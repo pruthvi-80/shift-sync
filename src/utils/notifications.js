@@ -47,11 +47,20 @@ export function getShiftStartTime(shiftType) {
   return shiftTimes[shiftType] || null
 }
 
-// Check if notification should be sent
-export function shouldSendNotification(todayShift, nextShift) {
+// Check if notification should be sent (with duplicate prevention)
+export function shouldSendNotification(todayShift) {
   const prefs = getNotificationPreferences()
   
   if (!prefs.enabled || !prefs.shiftNotifications) return false
+  
+  // Check if notification was already sent today
+  const lastNotificationKey = 'last_notification_sent'
+  const lastSent = localStorage.getItem(lastNotificationKey)
+  const today = new Date().toDateString()
+  
+  if (lastSent === today) {
+    return false // Already sent notification today
+  }
   
   // If today has a shift and it's close to start time
   if (todayShift && ['M', 'A', 'N'].includes(todayShift)) {
@@ -62,11 +71,39 @@ export function shouldSendNotification(todayShift, nextShift) {
       const shiftDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, mins)
       const timeDiff = (shiftDate - now) / (1000 * 60) // minutes
       
-      return timeDiff > 0 && timeDiff <= prefs.notifyBefore
+      // Mark notification as sent if timing is right
+      if (timeDiff > 0 && timeDiff <= prefs.notifyBefore) {
+        localStorage.setItem(lastNotificationKey, today)
+        return true
+      }
     }
   }
   
   return false
+}
+
+// Get cab booking reminder info (with duplicate prevention)
+export function shouldSendCabReminder() {
+  const prefs = getNotificationPreferences()
+  
+  if (!prefs.enabled || !prefs.cabReminders) return false
+  
+  // Check if cab reminder was already sent today
+  const lastCabReminderKey = 'last_cab_reminder_sent'
+  const lastSent = localStorage.getItem(lastCabReminderKey)
+  const today = new Date().toDateString()
+  
+  if (lastSent === today) {
+    return false // Already sent cab reminder today
+  }
+  
+  return true
+}
+
+// Mark cab reminder as sent
+export function markCabReminderSent() {
+  const today = new Date().toDateString()
+  localStorage.setItem('last_cab_reminder_sent', today)
 }
 
 // Get cab booking reminder info
