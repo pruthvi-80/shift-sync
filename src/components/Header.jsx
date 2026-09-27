@@ -157,10 +157,10 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
             <ThemeSettings />
 
             {/* Month Navigation */}
-            {view !== 'cycle' && <div className="header-month-nav flex items-center rounded-lg surface-2 border border-amber-900/20">
+            {(view !== 'cycle' || session) && <div className="header-month-nav flex items-center rounded-lg surface-2 border border-amber-900/20">
               <button
                 onClick={handlePrevMonth}
-                disabled={loading}
+                disabled={view !== 'cycle' && loading}
                 className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@ function Header({ view, setView, hasData, selectedMonth, onMonthChange, loading,
               </span>
               <button
                 onClick={handleNextMonth}
-                disabled={loading}
+                disabled={view !== 'cycle' && loading}
                 className="p-1.5 text-zinc-400 hover:text-amber-300 transition-all disabled:opacity-50"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

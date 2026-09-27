@@ -34,6 +34,7 @@ function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [view, setView] = useState('daily') // 'daily', 'monthly'
   const [selectedMonth, setSelectedMonth] = useState(getIndianMonth())
+  const [cycleCalendarMonth, setCycleCalendarMonth] = useState(getIndianMonth())
   const [currentDayIndex, setCurrentDayIndex] = useState(0)
   const [roasterData, setRoasterData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -272,6 +273,14 @@ function App() {
     setCurrentDayIndex(0)
   }, [])
 
+  const handleHeaderMonthChange = useCallback((newMonth) => {
+    if (view === 'cycle') {
+      setCycleCalendarMonth(newMonth)
+    } else {
+      handleMonthChange(newMonth)
+    }
+  }, [handleMonthChange, view])
+
   const handlePrevDay = useCallback(() => {
     setCurrentDayIndex(prev => Math.max(0, prev - 1))
   }, [])
@@ -342,8 +351,8 @@ function App() {
         view={view} 
         setView={setView} 
         hasData={!!roasterData}
-        selectedMonth={selectedMonth}
-        onMonthChange={handleMonthChange}
+        selectedMonth={view === 'cycle' ? cycleCalendarMonth : selectedMonth}
+        onMonthChange={handleHeaderMonthChange}
         loading={loading}
         todayShift={todayShift}
         isCollapsed={headerCollapsed}
@@ -468,6 +477,7 @@ function App() {
               session={session}
               authReady={authReady}
               onLogin={() => setShowAuthPanel(true)}
+              calendarMonth={cycleCalendarMonth}
             />
           </Suspense>
         )}

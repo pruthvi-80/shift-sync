@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   addDays,
-  addMonths,
   differenceInCalendarDays,
   eachDayOfInterval,
   endOfMonth,
@@ -10,7 +9,6 @@ import {
   isSameDay,
   startOfDay,
   startOfMonth,
-  subMonths
 } from 'date-fns'
 import { supabase } from '../utils/supabase'
 
@@ -42,10 +40,9 @@ function dateFromKey(dateKey) {
   return new Date(`${dateKey}T00:00:00`)
 }
 
-function CycleTracker({ session, authReady, onLogin }) {
+function CycleTracker({ session, authReady, onLogin, calendarMonth }) {
   const [trackerData, setTrackerData] = useState(loadTrackerData)
   const [cycleLengthDraft, setCycleLengthDraft] = useState(() => String(trackerData.cycleLength))
-  const [calendarMonth, setCalendarMonth] = useState(startOfMonth(new Date()))
   const [startDate, setStartDate] = useState(format(startOfDay(new Date()), 'yyyy-MM-dd'))
   const [duration, setDuration] = useState(5)
   const [symptoms, setSymptoms] = useState([])
@@ -410,10 +407,6 @@ function CycleTracker({ session, authReady, onLogin }) {
               <div>
                 <h3>{format(calendarMonth, 'MMMM yyyy')}</h3>
                 <p>{periods.length ? `Next expected ${format(expectedStart, 'MMM d')}` : 'Typical start window: 14th–16th'}</p>
-              </div>
-              <div className="cycle-month-controls">
-                <button type="button" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))} aria-label="Previous month">‹</button>
-                <button type="button" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))} aria-label="Next month">›</button>
               </div>
             </div>
 
